@@ -1,0 +1,16 @@
+[INFO] Numba Acceleration Enabled
+Debug Configuration: USE_NUMBA=True
+Running 10 simulations...
+[INFO] PIMC Engine: Warming up Numba JIT functions...
+[INFO] PIMC Engine: Numba Warmup Complete.
+[INFO] PIMC Engine: Initializing ThreadPoolExecutor with 8 workers...
+DEBUG: Worker started. Sim limit: 2
+DEBUG: Worker started. Sim limit: 2
+DEBUG: Worker started. Sim limit: 1
+DEBUG: Worker started. Sim limit: 1
+DEBUG: Worker started. Sim limit: 1
+DEBUG: Worker started. Sim limit: 1
+DEBUG: Worker started. Sim limit: 1
+DEBUG: Worker started. Sim limit: 1
+DEBUG: PIMC Thread-Batch Time: 0.0058s for 10 sims
+Results written to debug_log.txt

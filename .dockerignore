@@ -1,0 +1,4 @@
+wsl
+cd ~
+cd pgx_mahjong_project
+source venv/bin/activate

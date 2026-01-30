@@ -1,0 +1,107 @@
+笨・Numba Acceleration Enabled
+隨ｨ繝ｻMain Process Numba Status: True
+﨟槫勠 Starting PIMC Robustness Test (Numba Check)
+
+[Phase 1] Initial Run (Warmup)
+噫 PIMC Engine: Initializing ProcessPoolExecutor with 6 workers...
+笶・PIMC Critical Error: BrokenProcessPool. Resetting executor for next turn.
+笞・・PIMC Engine: Resetting ProcessPoolExecutor...
+隨ｨ繝ｻPhase 1 Result: [None]
+
+[Phase 2] Sabotage (Killing a worker)
+﨟櫁｣｡繝ｻ繝ｻKilling worker process 1820...
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Failed to kill 1820: [WinError 5] 繧｢繧ｯ繧ｻ繧ｹ縺梧拠蜷ｦ縺輔ｌ縺ｾ縺励◆縲・
+
+[Phase 3] Recovery Run
+噫 PIMC Engine: Initializing ProcessPoolExecutor with 6 workers...
+笶・PIMC Critical Error: BrokenProcessPool. Resetting executor for next turn.
+笞・・PIMC Engine: Resetting ProcessPoolExecutor...
+隨ｨ繝ｻPhase 3 Result: [None]
+
+[Phase 4] Post-Recovery Run
+噫 PIMC Engine: Initializing ProcessPoolExecutor with 6 workers...
+笶・PIMC Critical Error: BrokenProcessPool. Resetting executor for next turn.
+笞・・PIMC Engine: Resetting ProcessPoolExecutor...
+隨ｨ繝ｻPhase 4 Result: [None]
+
+﨟櫁р SUCCESS: PIMC Engine recovered and continued working!
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed
+Traceback (most recent call last):
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\queues.py", line 246, in _feed
+    send_bytes(obj)
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 184, in send_bytes
+    self._check_closed()
+  File "C:\Users\shiny\scoop\apps\python311\current\Lib\multiprocessing\connection.py", line 137, in _check_closed
+    raise OSError("handle is closed")
+OSError: handle is closed

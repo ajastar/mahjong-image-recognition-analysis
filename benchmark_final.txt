@@ -1,0 +1,6 @@
+Cold Execution Time (inc. warmup): 1.8395 seconds
+Warm Execution Time: 0.7655 seconds
+Results:
+  2z: Score=997.00
+
+[PASS] Performance Excellent (< 1.5s)

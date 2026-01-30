@@ -1,0 +1,8 @@
+# mortal/config.toml
+[model]
+# モデルファイル名を正確に記述してください
+path = "mortal_v5.pth"
+
+[search]
+# 探索の深さや精度（数値を上げると強くなるが遅くなる）
+simulation_count = 1000

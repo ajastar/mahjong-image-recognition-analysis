@@ -1,0 +1,41 @@
+# Environments
+mjx_*_env/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.vscode/
+
+# Logs and Debug
+*.log
+*_debug.txt
+debug_*.jpg
+debug_*.png
+test_output*.txt
+logic_*.txt
+bench_*.txt
+runs/
+
+# Large Models (Exceeding GitHub limits or blob storage recommended)
+*.pt
+*.pth
+*.onnx
+
+# Datasets
+dataset_collector/
+dataset_roboflow_public/
+dataset_learning/
+checkpoints_superhuman_blackwell/
+
+# Browser Profiles
+browser_profiles/
+debug_browser_clicks/
+debug_clicks/
+debug_js_clicks/
+debug_attach/
+
+# Binaries and temp
+ngrok.exe
+*.exe
+*.tmp
+*.bak

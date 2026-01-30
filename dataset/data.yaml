@@ -1,0 +1,42 @@
+path: E:\AI_Project_Hub\Mahjong_Maker\dataset
+train: train/images
+val: train/images
+names:
+  0: 1m
+  1: 2m
+  2: 3m
+  3: 4m
+  4: 5m
+  5: 6m
+  6: 7m
+  7: 8m
+  8: 9m
+  9: 1p
+  10: 2p
+  11: 3p
+  12: 4p
+  13: 5p
+  14: 6p
+  15: 7p
+  16: 8p
+  17: 9p
+  18: 1s
+  19: 2s
+  20: 3s
+  21: 4s
+  22: 5s
+  23: 6s
+  24: 7s
+  25: 8s
+  26: 9s
+  27: east
+  28: south
+  29: west
+  30: north
+  31: haku
+  32: hatsu
+  33: chun
+  34: 5mr
+  35: 5pr
+  36: 5sr
+  37: ura

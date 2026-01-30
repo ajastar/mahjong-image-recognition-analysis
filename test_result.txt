@@ -1,0 +1,35 @@
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+噫 Starting PIMC Robustness Test (Numba Check)
+
+[Phase 1] Initial Run (Warmup)
+🚀 PIMC Engine: Initializing ProcessPoolExecutor with 6 workers...
+DEBUG: PIMC Batch Execution Time: 1.0631s for 2500 sims
+笨・Phase 1 Result: [0.0]
+
+[Phase 2] Sabotage (Killing a worker)
+裡・・Killing worker process 17712...
+
+[Phase 3] Recovery Run
+❌ PIMC Critical Error: BrokenProcessPool. Resetting executor for next turn.
+⚠️ PIMC Engine: Resetting ProcessPoolExecutor...
+笨・Phase 3 Result: [0.0]
+
+[Phase 4] Post-Recovery Run
+🚀 PIMC Engine: Initializing ProcessPoolExecutor with 6 workers...
+DEBUG: PIMC Batch Execution Time: 1.1808s for 2500 sims
+笨・Phase 4 Result: [0.0]
+
+脂 SUCCESS: PIMC Engine recovered and continued working!
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True
+✅ Numba Acceleration Enabled
+笨・Main Process Numba Status: True

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AnnotationProject>
+  <Version>3.3.3</Version>
+  <ImageDir>raw_images</ImageDir>
+  <LabelDir>dataset/train/labels</LabelDir>
+  <OutputDir>dataset</OutputDir>
+  <Labels>
+    <Label name="1m" color="Red"/>
+    <Label name="2m" color="Red"/>
+    <Label name="3m" color="Red"/>
+    <Label name="4m" color="Red"/>
+    <Label name="5m" color="Red"/>
+    <Label name="6m" color="Red"/>
+    <Label name="7m" color="Red"/>
+    <Label name="8m" color="Red"/>
+    <Label name="9m" color="Red"/>
+    <Label name="1p" color="Blue"/>
+    <Label name="2p" color="Blue"/>
+    <Label name="3p" color="Blue"/>
+    <Label name="4p" color="Blue"/>
+    <Label name="5p" color="Blue"/>
+    <Label name="6p" color="Blue"/>
+    <Label name="7p" color="Blue"/>
+    <Label name="8p" color="Blue"/>
+    <Label name="9p" color="Blue"/>
+    <Label name="1s" color="Green"/>
+    <Label name="2s" color="Green"/>
+    <Label name="3s" color="Green"/>
+    <Label name="4s" color="Green"/>
+    <Label name="5s" color="Green"/>
+    <Label name="6s" color="Green"/>
+    <Label name="7s" color="Green"/>
+    <Label name="8s" color="Green"/>
+    <Label name="9s" color="Green"/>
+    <Label name="east" color="Yellow"/>
+    <Label name="south" color="Yellow"/>
+    <Label name="west" color="Yellow"/>
+    <Label name="north" color="Yellow"/>
+    <Label name="haku" color="White"/>
+    <Label name="hatsu" color="Purple"/>
+    <Label name="chun" color="Orange"/>
+    <Label name="ura" color="Gray"/>
+  </Labels>
+</AnnotationProject>

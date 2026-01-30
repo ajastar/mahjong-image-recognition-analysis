@@ -1,0 +1,42 @@
+path: E:\AI_Project_Hub\Mahjong_Maker\dataset_learning
+train: train/images
+val: val/images
+nc: 37
+names:
+  0: 0m
+  1: 0p
+  2: 0s
+  3: 1m
+  4: 1p
+  5: 1s
+  6: 1z
+  7: 2m
+  8: 2p
+  9: 2s
+  10: 2z
+  11: 3m
+  12: 3p
+  13: 3s
+  14: 3z
+  15: 4m
+  16: 4p
+  17: 4s
+  18: 4z
+  19: 5m
+  20: 5p
+  21: 5s
+  22: 5z
+  23: 6m
+  24: 6p
+  25: 6s
+  26: 6z
+  27: 7m
+  28: 7p
+  29: 7s
+  30: 7z
+  31: 8m
+  32: 8p
+  33: 8s
+  34: 9m
+  35: 9p
+  36: 9s
