@@ -16,10 +16,10 @@ logic_*.txt
 bench_*.txt
 runs/
 
-# Large Models (Exceeding GitHub limits or blob storage recommended)
-*.pt
-*.pth
-*.onnx
+# Large Models (Handled by Git LFS)
+# *.pt
+# *.pth
+# *.onnx
 
 # Datasets
 dataset_collector/
