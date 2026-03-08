@@ -269,6 +269,7 @@ else:
 class TemplateMatcher:
     def __init__(self, folder):
         self.templates = {}
+        self.resized_cache = {}
         paths = glob.glob(os.path.join(folder, "*.*"))
         for p in paths:
             img = cv2.imread(p, cv2.IMREAD_COLOR)
@@ -288,7 +289,10 @@ class TemplateMatcher:
             try:
                 # Resize template to target size (Simple scaling)
                 # Note: This assumes crop and template are roughly same aspect ratio
-                res = cv2.matchTemplate(target_img, cv2.resize(temp_img, (w, h)), cv2.TM_CCOEFF_NORMED)
+                cache_key = (label, w, h)
+                if cache_key not in self.resized_cache:
+                    self.resized_cache[cache_key] = cv2.resize(temp_img, (w, h))
+                res = cv2.matchTemplate(target_img, self.resized_cache[cache_key], cv2.TM_CCOEFF_NORMED)
                 score = np.max(res)
                 # DEBUG: Print score for analysis
                 if candidates: print(f"DEBUG_MATCH: {label} = {score:.4f}")
