@@ -1850,14 +1850,6 @@ class RobustGrid:
                 opps[seat]['river_data'][-1]['is_reach_tile'] = True
         
         return my_hand_objs, my_melds_objs, doras_objs, opps, table_center, anchors, debug_areas
-        
-        return my_hand_objs, my_melds_objs, doras_objs, opps, table_center, anchors, debug_areas
-        for seat in range(4):
-            opps[seat]['reach'] = reach_status[seat]
-            if reach_status[seat] and opps[seat]['river_data']:
-                opps[seat]['river_data'][-1]['is_reach_tile'] = True
-        
-        return my_hand_objs, my_melds_objs, doras_objs, opps, table_center, anchors, debug_areas
 
 class Visualizer:
     @staticmethod
