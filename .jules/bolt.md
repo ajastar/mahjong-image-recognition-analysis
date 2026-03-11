@@ -1,0 +1,3 @@
+## 2024-05-24 - Template Matching Optimization
+**Learning:** Redundant `cv2.resize` operations within tight loops (like template matching against multiple templates) create unnecessary performance overhead. This is especially true when matching identical UI elements across consecutive frames or different regions where the target size `(w, h)` remains constant.
+**Action:** When performing `cv2.matchTemplate`, resize the template image once and cache it using `(label, width, height)` as the key. Retrieve the pre-resized template from the cache in subsequent calls to avoid repetitive computation.

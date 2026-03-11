@@ -221,6 +221,7 @@ if os.path.exists(BRAIN_MODEL_PATH):
 class TemplateMatcher:
     def __init__(self, folder):
         self.templates = {}
+        self.cache = {}
         paths = glob.glob(os.path.join(folder, "*.*"))
         for p in paths:
             img = cv2.imread(p, cv2.IMREAD_COLOR)
@@ -233,7 +234,10 @@ class TemplateMatcher:
         h, w = target_img.shape[:2]
         for label, temp_img in self.templates.items():
             try:
-                res = cv2.matchTemplate(target_img, cv2.resize(temp_img, (w, h)), cv2.TM_CCOEFF_NORMED)
+                cache_key = (label, w, h)
+                if cache_key not in self.cache:
+                    self.cache[cache_key] = cv2.resize(temp_img, (w, h))
+                res = cv2.matchTemplate(target_img, self.cache[cache_key], cv2.TM_CCOEFF_NORMED)
                 score = np.max(res)
                 if score > best_score: best_score = score; best_label = label
             except: pass
