@@ -375,9 +375,8 @@ class RobustGrid:
         return results, debug_boxes
 
     @staticmethod
-    def is_back_side_tile(img_bgr):
-        if img_bgr is None or img_bgr.size == 0: return False
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    def is_back_side_tile(hsv):
+        if hsv is None or hsv.size == 0: return False
         h, w = hsv.shape[:2]
         crop_h, crop_w = int(h*0.4), int(w*0.4)
         cy, cx = h//2, w//2
@@ -455,7 +454,9 @@ class RobustGrid:
                         ix1, ix2 = int(t['bbox'][0]), int(t['bbox'][2])
                         if iy1<iy2 and ix1<ix2:
                             t_img = img_original[iy1:iy2, ix1:ix2]
-                            if RobustGrid.is_back_side_tile(t_img): back_tile_count += 1
+                            if t_img.size > 0:
+                                t_img_hsv = cv2.cvtColor(t_img, cv2.COLOR_BGR2HSV)
+                                if RobustGrid.is_back_side_tile(t_img_hsv): back_tile_count += 1
                     if back_tile_count > 0: is_kan = True
                     else:
                         labels = [t['label'] for t in group_of_4]
@@ -492,6 +493,10 @@ class RobustGrid:
         bottom_anchor_y = base_center_y + R - (img_h * 0.04)
         anchors = {1: (base_center_x, base_center_y - R), 2: (base_center_x - R, base_center_y),
                    0: (base_center_x + R, base_center_y), 3: (base_center_x, bottom_anchor_y)}
+
+        # ⚡ Bolt Optimization: Convert full image to HSV once instead of doing it per cropped tile
+        hsv_full_img = None
+
         for box in boxes:
             cls_id = int(box.cls[0]); label = names[cls_id]
             cx, cy, w, h = box.xywh[0].tolist()
@@ -501,8 +506,10 @@ class RobustGrid:
             if cy < anchors[3][1]: 
                 iy1, iy2 = int(y1), int(y2); ix1, ix2 = int(x1), int(x2)
                 if iy1 < iy2 and ix1 < ix2 and w > 5 and h > 5:
-                    tile_img = original_img[iy1:iy2, ix1:ix2]
-                    if RobustGrid.is_back_side_tile(tile_img): continue
+                    if hsv_full_img is None:
+                        hsv_full_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
+                    tile_hsv = hsv_full_img[iy1:iy2, ix1:ix2]
+                    if RobustGrid.is_back_side_tile(tile_hsv): continue
             raw_detections.append({'label': label, 'cx': cx, 'cy': cy, 'w': w, 'h': h, 'nx': nx, 'ny': ny, 'bbox': (x1, y1, x2, y2), 'conf': conf})
         
         raw_detections.sort(key=lambda x: x['conf'], reverse=True)
