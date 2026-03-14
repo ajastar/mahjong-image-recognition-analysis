@@ -1,0 +1,3 @@
+## 2024-06-18 - Prevent Unnecessary Repeated Conversions of Full Image Patches
+**Learning:** In computer vision projects, extracting thousands of crops per frame and calling `cv2.cvtColor` (e.g., `COLOR_BGR2HSV`) on each individual tiny crop sequentially generates massive CPU overhead.
+**Action:** When extracting multiple image crops that all need a specific color space conversion, run `cv2.cvtColor` *once* on the entire image before the loop, and then extract the already-converted crops from the resulting full-size image array. This shifts the overhead to a single, highly-optimized operation.

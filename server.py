@@ -1699,13 +1699,16 @@ class RobustGrid:
             return tiles, []
 
     @staticmethod
-    def get_hand_by_count(bottom_tiles, img_original):
+    def get_hand_by_count(bottom_tiles, img_original, hsv_full_img=None):
         if not bottom_tiles: return []
         bottom_tiles.sort(key=lambda t: t['cx'])
         tiles_reversed = list(reversed(bottom_tiles))
         final_list = []
         total_count = 0
         i = 0
+        if hsv_full_img is None:
+            hsv_full_img = cv2.cvtColor(img_original, cv2.COLOR_BGR2HSV)
+
         while i < len(tiles_reversed):
             if total_count >= 14: break
             current_tile = tiles_reversed[i]
@@ -1725,15 +1728,9 @@ class RobustGrid:
                         ix1, ix2 = int(t['bbox'][0]), int(t['bbox'][2])
                         
                         if iy1 < iy2 and ix1 < ix2:
-                            t_img = img_original[iy1:iy2, ix1:ix2]
-                            
-                            # ▼▼▼ 修正箇所: 暗カン判定用にここだけHSV変換する ▼▼▼
-                            # is_back_side_tile が HSV画像を要求する仕様に変わったため
-                            if t_img.size > 0:
-                                t_img_hsv = cv2.cvtColor(t_img, cv2.COLOR_BGR2HSV)
-                                if RobustGrid.is_back_side_tile(t_img_hsv): 
-                                    back_tile_count += 1
-                            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+                            t_img_hsv = hsv_full_img[iy1:iy2, ix1:ix2]
+                            if RobustGrid.is_back_side_tile(t_img_hsv):
+                                back_tile_count += 1
 
                     if back_tile_count > 0: is_kan = True
                     else:
@@ -1827,7 +1824,7 @@ class RobustGrid:
             else: river_candidates.append(t)
         
         real_hand_tiles, self_meld_tiles = RobustGrid.split_hand_and_melds(bottom_area_tiles)
-        my_hand_objs = RobustGrid.get_hand_by_count(real_hand_tiles, original_img)
+        my_hand_objs = RobustGrid.get_hand_by_count(real_hand_tiles, original_img, hsv_full_img=hsv_full_img)
         my_melds_objs = self_meld_tiles 
         
         for t in river_candidates:
