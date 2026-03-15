@@ -1,0 +1,3 @@
+## 2024-03-15 - Cached Resized Template Images for TemplateMatcher
+**Learning:** In the mahjong automation scripts (`server.py`, `single_bot.py`, `Background_Multi_Mahjong.py`, `Jantama_Attach_Mode.py`), the `TemplateMatcher.match` method is repeatedly called in inner loops to scan HUD elements using `cv2.matchTemplate`. Previously, it was invoking `cv2.resize` on the template images for every candidate and every frame, which adds noticeable overhead.
+**Action:** Created a caching mechanism (`self.resized_templates`) in `TemplateMatcher` keyed by `(label, w, h)` to reuse previously resized images, ensuring `cv2.resize` is only called once per template size, improving inner loop performance.
