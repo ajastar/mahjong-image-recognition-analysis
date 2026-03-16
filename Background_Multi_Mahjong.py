@@ -367,13 +367,12 @@ class RobustGrid:
             results[key] = val; debug_boxes.append((x1, y1, x2, y2, key, val))
         return results, debug_boxes
     @staticmethod
-    def is_back_side_tile(img_bgr):
-        if img_bgr is None or img_bgr.size == 0: return False
-        hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-        h, w = hsv.shape[:2]
+    def is_back_side_tile(hsv_crop):
+        if hsv_crop is None or hsv_crop.size == 0: return False
+        h, w = hsv_crop.shape[:2]
         crop_h, crop_w = int(h*0.4), int(w*0.4)
         cy, cx = h//2, w//2
-        center_region = hsv[cy-crop_h//2 : cy+crop_h//2, cx-crop_w//2 : cx+crop_w//2]
+        center_region = hsv_crop[cy-crop_h//2 : cy+crop_h//2, cx-crop_w//2 : cx+crop_w//2]
         if center_region.size == 0: return False
         s_channel = center_region[:, :, 1]; v_channel = center_region[:, :, 2]
         white_pixels = np.count_nonzero((s_channel < 40) & (v_channel > 130))
@@ -439,7 +438,9 @@ class RobustGrid:
                         ix1, ix2 = int(t['bbox'][0]), int(t['bbox'][2])
                         if iy1<iy2 and ix1<ix2:
                             t_img = img_original[iy1:iy2, ix1:ix2]
-                            if RobustGrid.is_back_side_tile(t_img): back_tile_count += 1
+                            if t_img.size > 0:
+                                t_img_hsv = cv2.cvtColor(t_img, cv2.COLOR_BGR2HSV)
+                                if RobustGrid.is_back_side_tile(t_img_hsv): back_tile_count += 1
                     if back_tile_count > 0: is_kan = True
                     else:
                         labels = [t['label'] for t in group_of_4]
@@ -468,6 +469,7 @@ class RobustGrid:
         return reach_status, debug_areas
     @staticmethod
     def parse_frame_dual(original_img, boxes, names, img_w, img_h):
+        hsv_full_img = cv2.cvtColor(original_img, cv2.COLOR_BGR2HSV)
         raw_detections = []
         base_center_x = img_w * 0.5; base_center_y = img_h * 0.42; R = img_h * 0.35
         bottom_anchor_y = base_center_y + R - (img_h * 0.04)
@@ -480,8 +482,8 @@ class RobustGrid:
             if cy < anchors[3][1]: 
                 iy1, iy2 = int(y1), int(y2); ix1, ix2 = int(x1), int(x2)
                 if iy1 < iy2 and ix1 < ix2 and w > 5 and h > 5:
-                    tile_img = original_img[iy1:iy2, ix1:ix2]
-                    if RobustGrid.is_back_side_tile(tile_img): continue
+                    tile_hsv_crop = hsv_full_img[iy1:iy2, ix1:ix2]
+                    if RobustGrid.is_back_side_tile(tile_hsv_crop): continue
             raw_detections.append({'label': label, 'cx': cx, 'cy': cy, 'w': w, 'h': h, 'nx': nx, 'ny': ny, 'bbox': (x1, y1, x2, y2), 'conf': conf})
         raw_detections.sort(key=lambda x: x['conf'], reverse=True)
         detections = []
