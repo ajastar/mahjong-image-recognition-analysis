@@ -1,0 +1,3 @@
+## 2024-05-24 - [Template Matcher Resizing Overhead]
+**Learning:** The `TemplateMatcher` class checks templates against screen crops of potentially varying sizes. Because the template images are loaded once but the target size `(w, h)` can change slightly, `cv2.resize(temp_img, (w, h))` was called redundantly inside the inner loop for every template match check. This created unnecessary overhead during high-frequency screen scanning.
+**Action:** Always implement a tuple `(label, w, h)` caching strategy for `cv2.resize` operations when iterating over templates, especially in real-time computer vision applications.
