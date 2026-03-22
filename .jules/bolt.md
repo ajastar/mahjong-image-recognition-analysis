@@ -1,0 +1,3 @@
+## 2024-05-18 - ⚡ Bolt: Pre-calculate tile properties in get_danger_score
+**Learning:** Codebase performance pattern: Frequent modulo and division operations (`% 9`, `// 9`) inside the `get_danger_score` inner loop (iterating through 4 opponents) create overhead. Pre-calculating these properties (`is_honor`, `tile_suit`, `tile_num`, `is_yaochu`) outside the loop eliminates redundant math.
+**Action:** Identify properties that depend only on function arguments and not on the loop variable, and pre-calculate them before loops.
