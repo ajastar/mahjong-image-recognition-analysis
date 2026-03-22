@@ -407,6 +407,12 @@ class SafetyUtils:
         if melds_arr is None: melds_arr = [[] for _ in range(4)]
         if doras is None: doras = []
         if riichi_indices is None: riichi_indices = [-1]*4
+
+        # Pre-calculate tile properties once before looping through opponents
+        is_honor = tile_idx >= 27
+        tile_suit = tile_idx // 9 if not is_honor else -1
+        tile_mod9 = tile_idx % 9 if not is_honor else -1
+        is_yaochu = is_honor or (not is_honor and (tile_mod9 in [0, 8]))
         
         for r_player in range(4):
             # Evaluate danger against EACH opponent
@@ -460,14 +466,14 @@ class SafetyUtils:
             
             # A. Kokushi Check (Dangerous Yaochu)
             if SafetyUtils._detect_kokushi_threat(river):
-                if tile_idx >= 27 or (tile_idx < 27 and (tile_idx%9 in [0, 8])):
+                if is_yaochu:
                     base_danger *= 2.0 # Critical Danger
                 else:
                     base_danger *= 0.1 # Middle tiles are safe
             
             # B. Tanyao Check (Safe Yaochu)
             elif SafetyUtils._detect_tanyao_threat(river, melds_arr[r_player]):
-                if tile_idx >= 27 or (tile_idx < 27 and (tile_idx%9 in [0, 8])):
+                if is_yaochu:
                     base_danger *= 0.2 # Yaochu Safe
                 else:
                     base_danger *= 1.2 # Middle Dangerous
@@ -476,8 +482,8 @@ class SafetyUtils:
             target_suit = SafetyUtils._detect_honitsu(river)
             
             if target_suit is not None:
-                if tile_idx < 27: # Only applies to suit tiles
-                    my_suit = tile_idx // 9
+                if not is_honor: # Only applies to suit tiles
+                    my_suit = tile_suit
                     if my_suit == target_suit:
                         base_danger *= 1.5 # Danger Boost for Target Suit
                     else:
@@ -486,7 +492,7 @@ class SafetyUtils:
                              base_danger *= 0.5
             
             # 2. Honors Logic
-            if tile_idx >= 27:
+            if is_honor:
                 visible = visible_tiles_34[tile_idx]
                 if visible >= 3: base_danger = 0 # Safe (Hell wait only)
                 elif visible == 2: base_danger = 10 # Low
@@ -496,10 +502,10 @@ class SafetyUtils:
                 pass
                 
             # 3. Suji Logic (Ryanmen negation)
-            elif tile_idx < 27:
+            elif not is_honor:
                 is_suji = False
-                color = tile_idx // 9
-                num = tile_idx % 9 + 1
+                color = tile_suit
+                num = tile_mod9 + 1
                 river_set = set(river) # Use local river vars
                 
                 # Check Standard Suji (4->1,7 etc)
@@ -579,9 +585,9 @@ class SafetyUtils:
             # If 5m is Dora, 4m/6m are dangerous.
             is_dora_neighbor = False
             for d in doras:
-                if d < 27 and tile_idx < 27:
-                    if d // 9 == tile_idx // 9: # Same suit
-                        dist = abs((d%9) - (tile_idx%9))
+                if d < 27 and not is_honor:
+                    if d // 9 == tile_suit: # Same suit
+                        dist = abs((d%9) - tile_mod9)
                         if dist == 1: is_dora_neighbor = True
             
             if is_dora_neighbor:
