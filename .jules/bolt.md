@@ -1,0 +1,3 @@
+## 2024-05-18 - [Optimization Pattern in Danger Score Calculation]
+**Learning:** `get_danger_score` in `mahjong_logic.py` iterates over 3 opponents. Inside this loop, properties derived strictly from `tile_idx` (like modulo and floor division by 9) were unnecessarily recalculated for every opponent, resulting in redundant logic. Since `tile_idx` is constant for a given call, hoisting these variables avoids executing operations three times.
+**Action:** Extract tile property calculations outside loops when the tile under evaluation is constant throughout the loop's execution.
