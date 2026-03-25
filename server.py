@@ -1699,7 +1699,7 @@ class RobustGrid:
             return tiles, []
 
     @staticmethod
-    def get_hand_by_count(bottom_tiles, img_original):
+    def get_hand_by_count(bottom_tiles, hsv_full_img):
         if not bottom_tiles: return []
         bottom_tiles.sort(key=lambda t: t['cx'])
         tiles_reversed = list(reversed(bottom_tiles))
@@ -1725,15 +1725,10 @@ class RobustGrid:
                         ix1, ix2 = int(t['bbox'][0]), int(t['bbox'][2])
                         
                         if iy1 < iy2 and ix1 < ix2:
-                            t_img = img_original[iy1:iy2, ix1:ix2]
-                            
-                            # ▼▼▼ 修正箇所: 暗カン判定用にここだけHSV変換する ▼▼▼
-                            # is_back_side_tile が HSV画像を要求する仕様に変わったため
-                            if t_img.size > 0:
-                                t_img_hsv = cv2.cvtColor(t_img, cv2.COLOR_BGR2HSV)
+                            t_img_hsv = hsv_full_img[iy1:iy2, ix1:ix2]
+                            if t_img_hsv.size > 0:
                                 if RobustGrid.is_back_side_tile(t_img_hsv): 
                                     back_tile_count += 1
-                            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
                     if back_tile_count > 0: is_kan = True
                     else:
@@ -1827,7 +1822,7 @@ class RobustGrid:
             else: river_candidates.append(t)
         
         real_hand_tiles, self_meld_tiles = RobustGrid.split_hand_and_melds(bottom_area_tiles)
-        my_hand_objs = RobustGrid.get_hand_by_count(real_hand_tiles, original_img)
+        my_hand_objs = RobustGrid.get_hand_by_count(real_hand_tiles, hsv_full_img)
         my_melds_objs = self_meld_tiles 
         
         for t in river_candidates:
@@ -1844,14 +1839,6 @@ class RobustGrid:
             opps[seat]['river'] = [t['label'] for t in sorted_data]
         
         reach_status, debug_areas = RobustGrid.check_reach_sticks_by_color(original_img)
-        for seat in range(4):
-            opps[seat]['reach'] = reach_status[seat]
-            if reach_status[seat] and opps[seat]['river_data']:
-                opps[seat]['river_data'][-1]['is_reach_tile'] = True
-        
-        return my_hand_objs, my_melds_objs, doras_objs, opps, table_center, anchors, debug_areas
-        
-        return my_hand_objs, my_melds_objs, doras_objs, opps, table_center, anchors, debug_areas
         for seat in range(4):
             opps[seat]['reach'] = reach_status[seat]
             if reach_status[seat] and opps[seat]['river_data']:
