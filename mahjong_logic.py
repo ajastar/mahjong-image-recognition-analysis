@@ -662,8 +662,11 @@ class NakiUtils:
 
         # Select Best
         if not actions: return None
-        if any("RON" in a for a in actions): return "RON! (Win)"
-        if any("PON" in a for a in actions): return actions[0] # Priority to Pon
+        for a in actions:
+            if "RON" in a: return "RON! (Win)"
+        # Since PON is appended before CHI in the actions list,
+        # actions[0] will always be PON if it's available.
+        # So we can just return actions[0] directly as the highest priority action.
         return actions[0] 
 
 class NakiPlanner:
