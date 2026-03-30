@@ -896,8 +896,48 @@ class AgariUtils:
             return True
 
         # 3. 一般手 (4面子1雀頭)
+        # Normal - Suit Count Optimization
+        s_m = sum(hand_34[0:9])
+        m_mod = s_m % 3
+        if m_mod == 1: return False
+
+        s_p = sum(hand_34[9:18])
+        p_mod = s_p % 3
+        if p_mod == 1: return False
+
+        s_s = sum(hand_34[18:27])
+        s_mod = s_s % 3
+        if s_mod == 1: return False
+
+        s_z = sum(hand_34[27:34])
+        z_mod = s_z % 3
+        if z_mod == 1: return False
+
+        head_suit_count = 0
+        head_start = 0
+        head_end = 34
+
+        if m_mod == 2:
+            head_suit_count += 1
+            head_start = 0
+            head_end = 9
+        if p_mod == 2:
+            head_suit_count += 1
+            head_start = 9
+            head_end = 18
+        if s_mod == 2:
+            head_suit_count += 1
+            head_start = 18
+            head_end = 27
+        if z_mod == 2:
+            head_suit_count += 1
+            head_start = 27
+            head_end = 34
+
+        if head_suit_count != 1: return False
+
         # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        for head_idx in range(head_start, head_end):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 

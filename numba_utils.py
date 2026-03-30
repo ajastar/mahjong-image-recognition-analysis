@@ -305,8 +305,51 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal - Suit Count Optimization
+    s_m = 0
+    for i in range(0, 9): s_m += hand_34[i]
+    m_mod = s_m % 3
+    if m_mod == 1: return False
+
+    s_p = 0
+    for i in range(9, 18): s_p += hand_34[i]
+    p_mod = s_p % 3
+    if p_mod == 1: return False
+
+    s_s = 0
+    for i in range(18, 27): s_s += hand_34[i]
+    s_mod = s_s % 3
+    if s_mod == 1: return False
+
+    s_z = 0
+    for i in range(27, 34): s_z += hand_34[i]
+    z_mod = s_z % 3
+    if z_mod == 1: return False
+
+    head_suit_count = 0
+    head_start = 0
+    head_end = 34
+
+    if m_mod == 2:
+        head_suit_count += 1
+        head_start = 0
+        head_end = 9
+    if p_mod == 2:
+        head_suit_count += 1
+        head_start = 9
+        head_end = 18
+    if s_mod == 2:
+        head_suit_count += 1
+        head_start = 18
+        head_end = 27
+    if z_mod == 2:
+        head_suit_count += 1
+        head_start = 27
+        head_end = 34
+
+    if head_suit_count != 1: return False
+
+    for head_idx in range(head_start, head_end):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):
