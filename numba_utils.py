@@ -305,8 +305,42 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal - Modulo-3 Suit-Count Optimization
+    # A valid standard hand consists of 4 sets of 3 and 1 pair of 2.
+    # Therefore, exactly one suit must have sum % 3 == 2, and the rest 0.
+    sum_m = 0
+    sum_p = 0
+    sum_s = 0
+    sum_z = 0
+
+    for i in range(0, 9): sum_m += hand_34[i]
+    for i in range(9, 18): sum_p += hand_34[i]
+    for i in range(18, 27): sum_s += hand_34[i]
+    for i in range(27, 34): sum_z += hand_34[i]
+
+    rem_m = sum_m % 3
+    if rem_m != 0 and rem_m != 2: return False
+    rem_p = sum_p % 3
+    if rem_p != 0 and rem_p != 2: return False
+    rem_s = sum_s % 3
+    if rem_s != 0 and rem_s != 2: return False
+    rem_z = sum_z % 3
+    if rem_z != 0 and rem_z != 2: return False
+
+    if rem_m + rem_p + rem_s + rem_z != 2: return False
+
+    head_start = 0
+    head_end = 0
+    if rem_m == 2:
+        head_start = 0; head_end = 9
+    elif rem_p == 2:
+        head_start = 9; head_end = 18
+    elif rem_s == 2:
+        head_start = 18; head_end = 27
+    else:
+        head_start = 27; head_end = 34
+
+    for head_idx in range(head_start, head_end):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):
