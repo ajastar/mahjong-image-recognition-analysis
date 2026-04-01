@@ -1,0 +1,3 @@
+## 2024-05-24 - Modulo-3 Suit Count Optimization
+**Learning:** In `mahjong_logic.py` and `numba_utils.py`, `is_agari` and `is_agari_jit` do NOT currently use a modulo-3 suit-count optimization. Memory mentions it, but it's not present in the code. Because a valid standard hand consists of 4 sets of 3 and 1 pair of 2, the suit containing the head must mathematically sum to 2 (mod 3), while all other suits must sum to 0 (mod 3). This domain-specific constraint fast-fails invalid hands and constrains the head search, vastly improving efficiency within simulation loops.
+**Action:** Implement this optimization in `numba_utils.py` and `mahjong_logic.py`'s `is_agari` / `is_agari_jit` to reduce unnecessary checks and speed up PIMC simulations.

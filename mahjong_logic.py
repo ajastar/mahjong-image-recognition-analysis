@@ -896,8 +896,33 @@ class AgariUtils:
             return True
 
         # 3. 一般手 (4面子1雀頭)
+        # Optimization: Suit modulo 3
+        # Because a valid standard hand consists of 4 sets of 3 and 1 pair of 2,
+        # the suit containing the head must mathematically sum to 2 (mod 3),
+        # while all other suits must sum to 0 (mod 3).
+        sum_m = sum(hand_34[0:9])
+        sum_p = sum(hand_34[9:18])
+        sum_s = sum(hand_34[18:27])
+        sum_z = sum(hand_34[27:34])
+
+        mod_m = sum_m % 3
+        mod_p = sum_p % 3
+        mod_s = sum_s % 3
+        mod_z = sum_z % 3
+
+        if mod_m == 2 and mod_p == 0 and mod_s == 0 and mod_z == 0:
+            head_start, head_end = 0, 9
+        elif mod_m == 0 and mod_p == 2 and mod_s == 0 and mod_z == 0:
+            head_start, head_end = 9, 18
+        elif mod_m == 0 and mod_p == 0 and mod_s == 2 and mod_z == 0:
+            head_start, head_end = 18, 27
+        elif mod_m == 0 and mod_p == 0 and mod_s == 0 and mod_z == 2:
+            head_start, head_end = 27, 34
+        else:
+            return False
+
         # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        for head_idx in range(head_start, head_end):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
