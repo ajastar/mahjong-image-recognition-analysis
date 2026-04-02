@@ -305,8 +305,40 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal (Modulo-3 Suit Optimization)
+    # 1. Calculate sum of each suit
+    c0 = np.sum(hand_34[0:9])
+    c1 = np.sum(hand_34[9:18])
+    c2 = np.sum(hand_34[18:27])
+    c3 = np.sum(hand_34[27:34])
+
+    m0 = c0 % 3
+    m1 = c1 % 3
+    m2 = c2 % 3
+    m3 = c3 % 3
+
+    # Fast-fail: Valid standard hands have exactly one suit with sum % 3 == 2 (head)
+    # and all other suits with sum % 3 == 0
+    if (m0 != 0 and m0 != 2) or (m1 != 0 and m1 != 2) or (m2 != 0 and m2 != 2) or (m3 != 0 and m3 != 2):
+        return False
+
+    head_suit = -1
+    if m0 == 2: head_suit = 0
+    elif m1 == 2: head_suit = 1
+    elif m2 == 2: head_suit = 2
+    elif m3 == 2: head_suit = 3
+    else: return False
+
+    if head_suit == 0 and (m1!=0 or m2!=0 or m3!=0): return False
+    if head_suit == 1 and (m0!=0 or m2!=0 or m3!=0): return False
+    if head_suit == 2 and (m0!=0 or m1!=0 or m3!=0): return False
+    if head_suit == 3 and (m0!=0 or m1!=0 or m2!=0): return False
+
+    # 2. Restrict head search space
+    start_idx = head_suit * 9
+    end_idx = start_idx + 9 if head_suit < 3 else 34
+
+    for head_idx in range(start_idx, end_idx):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):

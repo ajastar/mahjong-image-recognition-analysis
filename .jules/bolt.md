@@ -1,0 +1,3 @@
+## 2024-03-24 - [Modulo-3 Agari Check Optimization]
+**Learning:** Mahjong hands have structural properties that can be exploited for massive performance gains. Because standard hands are composed of triplets (mentsus) and one pair (head), the suit containing the pair mathematically must sum to `2 (mod 3)`, while the other suits must sum to `0 (mod 3)`. We can use this to quickly invalidate hands and restrict the search space for the pair, drastically speeding up the simulation execution time.
+**Action:** Always look for structural/mathematical properties of the problem domain that allow for fast-fail checks, rather than exhaustively iterating through all possibilities.
