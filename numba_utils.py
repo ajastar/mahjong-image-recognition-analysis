@@ -305,8 +305,50 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal - ⚡ Bolt Optimization: Modulo-3 Suit Pruning
+    sum_m = 0
+    for i in range(0, 9): sum_m += hand_34[i]
+    sum_p = 0
+    for i in range(9, 18): sum_p += hand_34[i]
+    sum_s = 0
+    for i in range(18, 27): sum_s += hand_34[i]
+    sum_z = 0
+    for i in range(27, 34): sum_z += hand_34[i]
+
+    mod_m = sum_m % 3
+    mod_p = sum_p % 3
+    mod_s = sum_s % 3
+    mod_z = sum_z % 3
+
+    if mod_m == 1 or mod_p == 1 or mod_s == 1 or mod_z == 1:
+        return False
+
+    head_suit = -1
+    if mod_m == 2:
+        if mod_p != 0 or mod_s != 0 or mod_z != 0: return False
+        head_suit = 0
+    elif mod_p == 2:
+        if mod_m != 0 or mod_s != 0 or mod_z != 0: return False
+        head_suit = 1
+    elif mod_s == 2:
+        if mod_m != 0 or mod_p != 0 or mod_z != 0: return False
+        head_suit = 2
+    elif mod_z == 2:
+        if mod_m != 0 or mod_p != 0 or mod_s != 0: return False
+        head_suit = 3
+    else:
+        return False
+
+    if head_suit == 0:
+        start_idx, end_idx = 0, 9
+    elif head_suit == 1:
+        start_idx, end_idx = 9, 18
+    elif head_suit == 2:
+        start_idx, end_idx = 18, 27
+    else:
+        start_idx, end_idx = 27, 34
+
+    for head_idx in range(start_idx, end_idx):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):

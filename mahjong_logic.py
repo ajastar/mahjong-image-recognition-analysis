@@ -896,8 +896,53 @@ class AgariUtils:
             return True
 
         # 3. 一般手 (4面子1雀頭)
-        # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        # ⚡ Bolt Optimization: Modulo-3 Suit Pruning
+        # A valid standard hand must have 4 groups of 3 and 1 group of 2.
+        # This means the suit containing the head must sum to 2 (mod 3),
+        # while all other suits must sum to 0 (mod 3).
+        # This mathematical constraint allows us to instantly fail invalid hands
+        # and limit our search for the head to a single specific suit.
+        sum_m = sum(hand_34[0:9])
+        sum_p = sum(hand_34[9:18])
+        sum_s = sum(hand_34[18:27])
+        sum_z = sum(hand_34[27:34])
+
+        mod_m = sum_m % 3
+        mod_p = sum_p % 3
+        mod_s = sum_s % 3
+        mod_z = sum_z % 3
+
+        # If any suit sum is 1 mod 3, a standard hand is impossible
+        if mod_m == 1 or mod_p == 1 or mod_s == 1 or mod_z == 1:
+            return False
+
+        head_suit = -1
+        if mod_m == 2:
+            if mod_p != 0 or mod_s != 0 or mod_z != 0: return False
+            head_suit = 0
+        elif mod_p == 2:
+            if mod_m != 0 or mod_s != 0 or mod_z != 0: return False
+            head_suit = 1
+        elif mod_s == 2:
+            if mod_m != 0 or mod_p != 0 or mod_z != 0: return False
+            head_suit = 2
+        elif mod_z == 2:
+            if mod_m != 0 or mod_p != 0 or mod_s != 0: return False
+            head_suit = 3
+        else:
+            return False
+
+        if head_suit == 0:
+            start_idx, end_idx = 0, 9
+        elif head_suit == 1:
+            start_idx, end_idx = 9, 18
+        elif head_suit == 2:
+            start_idx, end_idx = 18, 27
+        else:
+            start_idx, end_idx = 27, 34
+
+        # まず雀頭（2枚以上ある牌）の候補を探す (Only in the constrained suit)
+        for head_idx in range(start_idx, end_idx):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
