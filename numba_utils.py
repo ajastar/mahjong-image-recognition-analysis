@@ -277,9 +277,12 @@ def simulate_chunk_jit(seed, my_hand_34, visible_counts_34, cand_indices, cand_i
 def get_waits_count_jit(hand_34_arr, visible_34_arr):
     total_waits = 0
     temp_hand = hand_34_arr.copy()
+
     for t_id in range(34):
         if temp_hand[t_id] >= 4: continue
+
         temp_hand[t_id] += 1
+
         if is_agari_jit(temp_hand):
             left = 4 - (temp_hand[t_id] - 1) - visible_34_arr[t_id]
             if left > 0: total_waits += left
@@ -306,8 +309,29 @@ def is_agari_jit(hand_34):
     if pair_count == 7: return True
 
     # Normal
+    # Optimization: Modulo-3 suit-count fast failure for standard hands
+    sum_m = np.sum(hand_34[0:9])
+    sum_p = np.sum(hand_34[9:18])
+    sum_s = np.sum(hand_34[18:27])
+    sum_z = np.sum(hand_34[27:34])
+
+    mod_m = sum_m % 3
+    mod_p = sum_p % 3
+    mod_s = sum_s % 3
+    mod_z = sum_z % 3
+
+    if (mod_m == 1 or mod_p == 1 or mod_s == 1 or mod_z == 1) or (mod_m + mod_p + mod_s + mod_z != 2):
+        return False
+
     for head_idx in range(34):
         if hand_34[head_idx] >= 2:
+            suit = head_idx // 9
+            # Modulo-3 check for head validity: head must be in the suit with mod 3 == 2
+            if suit == 0 and mod_m != 2: continue
+            if suit == 1 and mod_p != 2: continue
+            if suit == 2 and mod_s != 2: continue
+            if suit >= 3 and mod_z != 2: continue
+
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):
                 hand_34[head_idx] += 2
