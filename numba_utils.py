@@ -305,8 +305,46 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal optimization: sum mod 3
+    sum_m = 0
+    for i in range(0, 9): sum_m += hand_34[i]
+    sum_p = 0
+    for i in range(9, 18): sum_p += hand_34[i]
+    sum_s = 0
+    for i in range(18, 27): sum_s += hand_34[i]
+    sum_z = 0
+    for i in range(27, 34): sum_z += hand_34[i]
+
+    mod_m = sum_m % 3
+    mod_p = sum_p % 3
+    mod_s = sum_s % 3
+    mod_z = sum_z % 3
+
+    # Need exactly one 2, and rest 0
+    head_region = -1
+    if mod_m == 2 and mod_p == 0 and mod_s == 0 and mod_z == 0:
+        head_region = 0
+    elif mod_m == 0 and mod_p == 2 and mod_s == 0 and mod_z == 0:
+        head_region = 1
+    elif mod_m == 0 and mod_p == 0 and mod_s == 2 and mod_z == 0:
+        head_region = 2
+    elif mod_m == 0 and mod_p == 0 and mod_s == 0 and mod_z == 2:
+        head_region = 3
+    else:
+        return False # Invalid for standard hand
+
+    start_idx = 0
+    end_idx = 0
+    if head_region == 0:
+        start_idx = 0; end_idx = 9
+    elif head_region == 1:
+        start_idx = 9; end_idx = 18
+    elif head_region == 2:
+        start_idx = 18; end_idx = 27
+    else:
+        start_idx = 27; end_idx = 34
+
+    for head_idx in range(start_idx, end_idx):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):
