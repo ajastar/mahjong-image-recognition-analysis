@@ -1,0 +1,3 @@
+## 2024-06-25 - Modulo-3 Suit Count Constraint
+**Learning:** In standard Mahjong hands, valid standard shapes have 4 sets of 3 and 1 pair of 2. Calculating the sum of a suit modulo 3 instantly isolates the exact suit that must contain the pair (mod == 2) and verifies that other suits are perfectly chunkable into melds (mod == 0). This mathematical property allows us to avoid checking all 34 tiles to find the pair, fast-failing invalid combinations instantly in C-optimized array iterations.
+**Action:** Always look for global mathematical invariants (like mod 3 constraints) to rapidly prune search spaces before performing costly nested combinatorial loops like hand decomposition.
