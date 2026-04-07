@@ -895,9 +895,24 @@ class AgariUtils:
         if pair_count == 7:
             return True
 
-        # 3. 一般手 (4面子1雀頭)
-        # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        # 3. 一般手 (4面子1雀頭) - Modulo 3 Optimization
+        sum_m = sum(hand_34[0:9]) % 3
+        sum_p = sum(hand_34[9:18]) % 3
+        sum_s = sum(hand_34[18:27]) % 3
+        sum_z = sum(hand_34[27:34]) % 3
+
+        if sum_m == 2 and sum_p == 0 and sum_s == 0 and sum_z == 0:
+            start_idx, end_idx = 0, 9
+        elif sum_p == 2 and sum_m == 0 and sum_s == 0 and sum_z == 0:
+            start_idx, end_idx = 9, 18
+        elif sum_s == 2 and sum_m == 0 and sum_p == 0 and sum_z == 0:
+            start_idx, end_idx = 18, 27
+        elif sum_z == 2 and sum_m == 0 and sum_p == 0 and sum_s == 0:
+            start_idx, end_idx = 27, 34
+        else:
+            return False
+
+        for head_idx in range(start_idx, end_idx):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
