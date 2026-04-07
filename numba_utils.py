@@ -305,14 +305,60 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
-        if hand_34[head_idx] >= 2:
-            hand_34[head_idx] -= 2
-            if _is_all_mentsu_jit(hand_34):
+    # Normal - Modulo 3 Optimization
+    sum_m = 0
+    for i in range(9): sum_m += hand_34[i]
+    sum_m %= 3
+
+    sum_p = 0
+    for i in range(9, 18): sum_p += hand_34[i]
+    sum_p %= 3
+
+    sum_s = 0
+    for i in range(18, 27): sum_s += hand_34[i]
+    sum_s %= 3
+
+    sum_z = 0
+    for i in range(27, 34): sum_z += hand_34[i]
+    sum_z %= 3
+
+    if sum_m == 2 and sum_p == 0 and sum_s == 0 and sum_z == 0:
+        for head_idx in range(0, 9):
+            if hand_34[head_idx] >= 2:
+                hand_34[head_idx] -= 2
+                if _is_all_mentsu_jit(hand_34):
+                    hand_34[head_idx] += 2
+                    return True
                 hand_34[head_idx] += 2
-                return True
-            hand_34[head_idx] += 2
+        return False
+    elif sum_p == 2 and sum_m == 0 and sum_s == 0 and sum_z == 0:
+        for head_idx in range(9, 18):
+            if hand_34[head_idx] >= 2:
+                hand_34[head_idx] -= 2
+                if _is_all_mentsu_jit(hand_34):
+                    hand_34[head_idx] += 2
+                    return True
+                hand_34[head_idx] += 2
+        return False
+    elif sum_s == 2 and sum_m == 0 and sum_p == 0 and sum_z == 0:
+        for head_idx in range(18, 27):
+            if hand_34[head_idx] >= 2:
+                hand_34[head_idx] -= 2
+                if _is_all_mentsu_jit(hand_34):
+                    hand_34[head_idx] += 2
+                    return True
+                hand_34[head_idx] += 2
+        return False
+    elif sum_z == 2 and sum_m == 0 and sum_p == 0 and sum_s == 0:
+        for head_idx in range(27, 34):
+            if hand_34[head_idx] >= 2:
+                hand_34[head_idx] -= 2
+                if _is_all_mentsu_jit(hand_34):
+                    hand_34[head_idx] += 2
+                    return True
+                hand_34[head_idx] += 2
+        return False
+
     return False
 
 @njit(nogil=True, cache=False)
