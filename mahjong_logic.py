@@ -630,7 +630,10 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 # Optimization: Direct addition and explicit loop is faster than sum() generator expressions
+                 terminals = hand_34[0] + hand_34[8] + hand_34[9] + hand_34[17] + hand_34[18] + hand_34[26]
+                 for t in range(27, 34):
+                     terminals += hand_34[t]
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -799,7 +802,10 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            # Optimization: Explicit loop avoids Python generator object creation overhead
+            koutsu_count = 0
+            for m in mentsu:
+                if m[0] == 'koutsu': koutsu_count += 1
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -891,7 +897,10 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        # Optimization: Explicit loop avoids Python generator object creation overhead
+        pair_count = 0
+        for c in hand_34:
+            if c >= 2: pair_count += 1
         if pair_count == 7:
             return True
 
@@ -1010,7 +1019,10 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        # Optimization: Explicit loop avoids Python generator object creation overhead
+        pairs = 0
+        for c in hand_34:
+            if c >= 2: pairs += 1
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1155,7 +1167,10 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            # Optimization: Explicit loop avoids Python generator object creation overhead
+            koutsu_count = 0
+            for b in blocks:
+                if b['type'] == 'koutsu': koutsu_count += 1
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
