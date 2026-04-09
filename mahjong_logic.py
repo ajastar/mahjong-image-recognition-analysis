@@ -630,7 +630,9 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 terminals = 0
+                 for t in [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]:
+                     terminals += hand_34[t]
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -755,8 +757,12 @@ class NakiPlanner:
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
-                    part_score += 4.0
+                elif suit_counts[s] >= 8 and honor_count > 0:
+                    active_suits = 0
+                    for x in suit_counts:
+                        if x > 0: active_suits += 1
+                    if active_suits == 1:
+                        part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
             # Check if shuntsu in different suits share same number
@@ -799,7 +805,10 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            koutsu_count = 0
+            for m in mentsu:
+                if m[0] == 'koutsu':
+                    koutsu_count += 1
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -849,6 +858,7 @@ class AgariUtils:
             return get_waits_count_jit(h, v)
 
         waits = []
+        waits_sum = 0
         # 34種を1つずつ足してアガリ形になるか試す
         for t_id in range(34):
             if hand_34[t_id] >= 4: continue
@@ -861,9 +871,10 @@ class AgariUtils:
                 left = 4 - hand_34[t_id] - visible_tiles_34[t_id] + 1 
                 if left < 0: left = 0
                 waits.append(left)
+                waits_sum += left
             hand_34[t_id] -= 1 # 戻す
 
-        return sum(waits)
+        return waits_sum
 
     @staticmethod
     def is_agari(hand_34, visible_tiles_34=None):
@@ -891,7 +902,10 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = 0
+        for c in hand_34:
+            if c >= 2:
+                pair_count += 1
         if pair_count == 7:
             return True
 
@@ -1010,7 +1024,10 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = 0
+        for c in hand_34:
+            if c >= 2:
+                pairs += 1
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1155,7 +1172,10 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            koutsu_count = 0
+            for b in blocks:
+                if b['type'] == 'koutsu':
+                    koutsu_count += 1
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
