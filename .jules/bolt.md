@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid `sum(1 for ...)` generator expressions in hot paths]
+**Learning:** In Python, using generator expressions like `sum(1 for x in iterable if condition)` inside performance-critical paths (e.g., Mahjong hand evaluation) is significantly slower than using explicit `for` loops or mathematical checks due to generator object creation and function call overhead.
+**Action:** When micro-optimizing critical logic in Python (especially when JIT compilation isn't strictly enforced), replace `sum()` with generator expressions with explicit counter loops, and look for opportunities to replace iterations entirely with direct state evaluations (like checking if an array element equals the expected total instead of iterating to count non-zero elements).
