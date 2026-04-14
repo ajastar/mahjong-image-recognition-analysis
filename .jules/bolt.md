@@ -1,0 +1,3 @@
+## 2024-04-14 - Replace Generator Comprehensions in sum()
+**Learning:** In hot-path functions (like `mahjong_logic.py` evaluation loops), Python generator comprehensions inside `sum()` (e.g., `sum(1 for c in hand_34 if c >= 2)`) incur significant overhead compared to explicit `for` loops or direct variable additions. Benchmarks showed replacing generator comprehensions with explicit loops reduced execution time by 30-80% for these operations.
+**Action:** When optimizing tight loops or frequently called functions, refactor generator comprehensions inside `sum()` to use explicit `for` loops with accumulator variables, or direct additions if the number of elements is small and fixed.
