@@ -1,0 +1,3 @@
+## 2024-05-18 - Generator Comprehension Overhead in Hot Paths
+**Learning:** In hot paths like scoring and evaluation loops in `mahjong_logic.py`, `sum(1 for x in iterable if condition)` incurs significant overhead compared to `len([x for x in iterable if condition])` due to generator frame allocation in Python. Even though list comprehensions allocate a new list, for small iterables (like 34 tiles or 4 blocks), the list allocation cost in C is much lower than the generator overhead.
+**Action:** When calculating simple counts based on conditions inside hot paths, prefer `len([x for ...])` over `sum(1 for ...)`.
