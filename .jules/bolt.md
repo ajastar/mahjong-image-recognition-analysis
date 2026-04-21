@@ -1,0 +1,3 @@
+## 2024-05-18 - Generator Comprehension Overhead in Python Hot Paths
+**Learning:** In hot-path functions (especially those called repeatedly like within Mahjong simulation or tree search loops), using generator comprehensions inside `sum()` (e.g., `sum(1 for c in hand_34 if c >= 2)`) introduces measurable function call overhead for the generator protocol in Python.
+**Action:** Replace generator comprehensions inside `sum()` with list comprehensions combined with `len()` (e.g., `len([c for c in hand_34 if c >= 2])`). This leverages Python's optimized C implementation for building lists and returning lengths, significantly improving performance without hurting code readability.
