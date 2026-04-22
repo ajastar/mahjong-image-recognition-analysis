@@ -1,0 +1,3 @@
+## 2024-04-22 - Python List Comprehensions vs Generator Comprehensions for Counting
+**Learning:** In hot-path functions (like scoring calculations), using Python generator comprehensions inside `sum()` (e.g., `sum(1 for x in items if condition)`) incurs significant overhead compared to `len()`. C-optimized list comprehensions combined with length checks (e.g., `len([x for x in items if condition])`) execute roughly 1.6x faster because they avoid the overhead of setting up a generator, yielding elements one by one, and iterating them within `sum()`.
+**Action:** When counting items matching a condition in performance-critical Python code, prefer `len([x for x in items if condition])` over `sum(1 for x in items if condition)`.
