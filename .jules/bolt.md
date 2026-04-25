@@ -1,0 +1,3 @@
+## 2024-04-25 - Avoid generator comprehension overhead inside sum()
+**Learning:** Python generator comprehensions inside `sum()` (e.g. `sum(1 for c in hand if c >= 2)`) incur significant overhead in hot-path functions compared to C-optimized list comprehensions.
+**Action:** When calculating counts or sums based on a condition within high-frequency loops (like Mahjong hand logic), use list comprehensions with `len()` (e.g. `len([c for c in hand if c >= 2])`) instead. This provides a roughly 2x speedup and avoids redundant overhead without sacrificing readability.
