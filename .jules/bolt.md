@@ -1,0 +1,3 @@
+## 2024-05-19 - Hoist Loop-Invariant Properties in Hot-Path Math Logic
+**Learning:** In highly called internal methods like `SafetyUtils.get_danger_score`, iterating over opponents (e.g., `range(4)`) causes mathematical checks involving the base target (like modulo `% 9`, integer division `// 9`, and constant list lookups `in [0, 8]`) to be executed redundantly. These operations compound significantly in Mahjong game logic where properties are checked thousands of times per simulated turn.
+**Action:** Always pre-calculate invariant target tile properties (is_honor, tile_suit, is_yaochu, is_dora_neighbor) outside of loops over opponents or simulation nodes to eliminate redundant arithmetic overhead.
