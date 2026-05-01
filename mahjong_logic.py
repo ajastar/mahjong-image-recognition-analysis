@@ -630,7 +630,8 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 # ⚡ Bolt: flattened list + list comprehension instead of generator + sum() for speed
+                 terminals = sum([hand_34[t] for t in [0,8,9,17,18,26,27,28,29,30,31,32,33]])
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -755,7 +756,8 @@ class NakiPlanner:
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
+                # ⚡ Bolt: using len([x...]) instead of sum(1 for...) avoids generator overhead
+                elif suit_counts[s] >= 8 and len([x for x in suit_counts if x > 0]) == 1 and honor_count > 0:
                     part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
@@ -799,7 +801,8 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            # ⚡ Bolt: optimized sum(1 for m in ...) to len([m for m in ...])
+            koutsu_count = len([m for m in mentsu if m[0] == 'koutsu'])
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -891,7 +894,8 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        # ⚡ Bolt: optimized generator sum to list length for performance
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1014,8 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        # ⚡ Bolt: optimized generator sum to list length for performance
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1155,7 +1160,8 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            # ⚡ Bolt: optimized generator sum to list length for performance
+            koutsu_count = len([b for b in blocks if b['type'] == 'koutsu'])
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
