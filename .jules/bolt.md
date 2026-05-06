@@ -1,0 +1,3 @@
+## 2024-05-24 - Python Generator Comprehension Overhead in hot paths
+**Learning:** Generator comprehensions passed to `sum()` (e.g., `sum(1 for x in lst if cond)`) create significant function call overhead for frame allocation and `next()` calls compared to equivalent list comprehensions. Additionally, using generators or lists within `sum` for flat addition over fixed indices is much slower than direct addition.
+**Action:** Replace `sum(1 for x in lst if cond)` with `len([x for x in lst if cond])`, and replace `sum(lst[i] for i in indices)` with direct addition `lst[i1] + lst[i2] + ...` in high-frequency logic paths.
