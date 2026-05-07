@@ -1,0 +1,3 @@
+## 2024-05-18 - Generator Overhead in Hot Paths
+**Learning:** Using generator expressions inside `sum()` (e.g., `sum(1 for c in hand_34 if c >= 2)`) inside hot-path CPython methods like `is_agari` and `check_calls` introduces massive function call overhead due to frame allocation and `next()` iterator calls. In microbenchmarks, explicit unrolled loops or unrolled addition over flat array indices proved nearly 3-6x faster than `sum()` with generators.
+**Action:** When calculating sums or aggregates in performance-critical Python loops (e.g., Mahjong hand evaluation or PIMC simulation), avoid generator comprehensions. Use unrolled flat addition for fixed lists or explicit manual `for` loops to accumulate variables directly.
