@@ -1,0 +1,3 @@
+## 2024-05-12 - [Avoid Generator Comprehensions in sum() for Hot Paths]
+**Learning:** In CPython hot paths, evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call overhead for frame allocation and `next()` calls.
+**Action:** Replace `sum(generator)` patterns with C-optimized list comprehensions combined with length checks (e.g., `len([x for x in obj])`), or directly unroll summation for flat additions over fixed indices (e.g., `hand_34[0] + hand_34[8] + ...`). This provides measurable performance improvements without sacrificing clarity.
