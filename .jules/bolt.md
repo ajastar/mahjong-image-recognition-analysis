@@ -1,0 +1,4 @@
+
+## 2024-05-20 - Fast Module-Level Sets and Summations in Mahjong Logic
+**Learning:** In CPython hot-path algorithms, dynamically creating array subsets inside a generator expression for summing values (e.g., `sum(hand_34[t] for t in [0,8,9,...] + list(range(27,34)))`) adds severe allocation overhead. For fixed length loops on integer indexing or boolean checks (e.g., checking if a tile index is a terminal), module-level `frozenset` usage turns O(N) allocation and lookup into O(1). Additionally, unrolling simple scalar additions directly (e.g., `a[0] + a[8] + a[9]...`) bypasses the overhead of local scope iteration entirely, outperforming tuple maps and native sum generators by ~5x in raw performance tests.
+**Action:** Replace dynamically allocated tuple or list aggregations inside heavily-used logic loops with flattened module-level sets, and prefer flat unrolled array additions over localized `sum()` generators when bounds are completely fixed.

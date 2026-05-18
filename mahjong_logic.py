@@ -12,6 +12,8 @@ TILE_MAP = {
     "1s":18, "2s":19, "3s":20, "4s":21, "5s":22, "6s":23, "7s":24, "8s":25, "9s":26,
     "1z":27, "2z":28, "3z":29, "4z":30, "5z":31, "6z":32, "7z":33
 }
+
+TERMINAL_INDICES = frozenset([0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33])
 Tile = int # Type Alias
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
@@ -630,7 +632,7 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 terminals = hand_34[0] + hand_34[8] + hand_34[9] + hand_34[17] + hand_34[18] + hand_34[26] + hand_34[27] + hand_34[28] + hand_34[29] + hand_34[30] + hand_34[31] + hand_34[32] + hand_34[33]
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -685,7 +687,6 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
         
         for part in partitions:
             part_score = 0.0
@@ -717,17 +718,17 @@ class NakiPlanner:
             is_tanyao = True
             for m in mentsu:
                 if m[0] == 'koutsu':
-                    if m[1] in terminals: is_tanyao = False
+                    if m[1] in TERMINAL_INDICES: is_tanyao = False
                 elif m[0] == 'shunta':
                     if m[1] % 9 == 0 or m[1] % 9 == 6: is_tanyao = False
             for t in tatsu:
                 idx = t[1]
-                if idx in terminals or (idx+1) in terminals or (idx+2 if t[0]=='kanchan' else idx+1) in terminals:
+                if idx in TERMINAL_INDICES or (idx+1) in TERMINAL_INDICES or (idx+2 if t[0]=='kanchan' else idx+1) in TERMINAL_INDICES:
                     is_tanyao = False
             for p in pairs:
-                if p in terminals: is_tanyao = False
+                if p in TERMINAL_INDICES: is_tanyao = False
             for i in iso:
-                if i in terminals: is_tanyao = False
+                if i in TERMINAL_INDICES: is_tanyao = False
             
             if is_tanyao: part_score += 3.0
             
@@ -808,11 +809,11 @@ class NakiPlanner:
             all_terminal_blocks = True
             for m in mentsu:
                 if m[0] == 'koutsu':
-                    if m[1] not in terminals: all_terminal_blocks = False
+                    if m[1] not in TERMINAL_INDICES: all_terminal_blocks = False
                 elif m[0] == 'shunta':
                     if m[1] % 9 not in [0, 6]: all_terminal_blocks = False
             for p in pairs:
-                if p not in terminals: all_terminal_blocks = False
+                if p not in TERMINAL_INDICES: all_terminal_blocks = False
             
             if all_terminal_blocks and len(mentsu) >= 2:
                 part_score += 2.0
@@ -1018,9 +1019,8 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
             for i in range(34):
-                if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
+                if hand_34[i] > 0 and i in TERMINAL_INDICES: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
             
             # Honitsu Chiitoi
@@ -1069,12 +1069,11 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
-            if pair_idx in terminals: is_tanyao = False
+            if pair_idx in TERMINAL_INDICES: is_tanyao = False
             for b in blocks:
                 s = b['start']
                 if b['type'] == 'koutsu':
-                    if s in terminals: is_tanyao = False
+                    if s in TERMINAL_INDICES: is_tanyao = False
                 elif b['type'] == 'shunta':
                     if s % 9 == 0 or s % 9 == 6: is_tanyao = False
             if is_tanyao: current_yaku_han += 1; current_yaku_names.append("Tanyao")
@@ -1589,7 +1588,6 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
             
             # ブロックチェック
             for b in all_blocks:
@@ -1607,10 +1605,10 @@ class ValueEstimator:
                      if b['type'] == 'ryanmen' and (start % 9 == 0 or start % 9 == 7): # 12 or 89
                          is_tanyao = False
                 else: # Koutsu / Pair
-                     if start in terminals: is_tanyao = False
+                     if start in TERMINAL_INDICES: is_tanyao = False
             
             for p in part['pair']:
-                if p in terminals: is_tanyao = False
+                if p in TERMINAL_INDICES: is_tanyao = False
                 
             if is_tanyao: score += 1500
             
