@@ -1,0 +1,3 @@
+## 2024-05-20 - [Performance Anti-Pattern: Generator Comprehensions in sum()]
+**Learning:** In CPython hot-path functions, evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces function call overhead for frame allocation and `next()` calls, leading to slower execution. Similarly, using `sum()` with a generator over fixed indices is significantly slower than unrolled addition.
+**Action:** Replace `sum(1 for x in obj)` with `len([x for x in obj])` for counting conditions, and use direct unrolled addition (e.g., `arr[0] + arr[1] + ...`) when aggregating a small, fixed number of array indices in hot paths.
