@@ -1,0 +1,3 @@
+## 2024-05-24 - Flatten dynamically generated static lists in hot paths
+**Learning:** In CPython hot-path functions, dynamically generating static lists like `[0,8,9,17,18,26] + list(range(27,34))` inside loops or frequently called functions introduces significant overhead from repeated allocation and concatenation. Evaluating generator comprehensions inside `sum()` over these lists is also slow.
+**Action:** Extract these lists into module-level constants (e.g. `TERMINALS_SET` as a `frozenset` or `TERMINALS_TUP` as a `tuple`), and prefer unrolled addition or C-optimized list comprehensions combined with `len()` checks where `sum()` is currently used.
