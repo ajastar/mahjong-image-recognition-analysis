@@ -1,0 +1,3 @@
+## 2024-05-26 - Generator Comprehension Overhead inside `sum()`
+**Learning:** In CPython, using a generator expression inside `sum()` (e.g. `sum(1 for x in obj if condition)`) is unexpectedly slow in hot paths because it introduces overhead for frame allocation and repeated `next()` function calls for each element yielded.
+**Action:** Replace `sum(generator)` with `len([list_comprehension])` or manual iteration with an accumulator (`c+=1`), which are ~2-3x faster. For fixed-size small arrays (like 34 Mahjong tiles or 3 suits), manually unrolling the sum (e.g., `hand[0] + hand[8]...` or `(suit[0]>0) + (suit[1]>0)...`) is up to ~8x faster than using `sum()` with a generator.
