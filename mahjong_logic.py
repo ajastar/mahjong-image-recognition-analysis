@@ -6,6 +6,9 @@ import concurrent.futures
 import functools
 import itertools
 
+YAO_INDICES_TUP = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+TERMINALS_SET = frozenset(YAO_INDICES_TUP)
+
 TILE_MAP = {
     "1m":0, "2m":1, "3m":2, "4m":3, "5m":4, "6m":5, "7m":6, "8m":7, "9m":8,
     "1p":9, "2p":10, "3p":11, "4p":12, "5p":13, "6p":14, "7p":15, "8p":16, "9p":17,
@@ -876,10 +879,9 @@ class AgariUtils:
         
         # 1. 国士無双 (13種14牌)
         # 1,9,字牌の種数を確認
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
         is_kokushi = True
         has_pair = False
-        for idx in yao_indices:
+        for idx in YAO_INDICES_TUP:
             if hand_34[idx] == 0:
                 is_kokushi = False
                 break
@@ -891,13 +893,37 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = 0
+        for c in hand_34:
+            if c >= 2: pair_count += 1
         if pair_count == 7:
             return True
 
         # 3. 一般手 (4面子1雀頭)
+        # Modulo-3 Suit Count Check to fast-fail and constrain head search
+        sum_m = hand_34[0]+hand_34[1]+hand_34[2]+hand_34[3]+hand_34[4]+hand_34[5]+hand_34[6]+hand_34[7]+hand_34[8]
+        sum_p = hand_34[9]+hand_34[10]+hand_34[11]+hand_34[12]+hand_34[13]+hand_34[14]+hand_34[15]+hand_34[16]+hand_34[17]
+        sum_s = hand_34[18]+hand_34[19]+hand_34[20]+hand_34[21]+hand_34[22]+hand_34[23]+hand_34[24]+hand_34[25]+hand_34[26]
+        sum_h = hand_34[27]+hand_34[28]+hand_34[29]+hand_34[30]+hand_34[31]+hand_34[32]+hand_34[33]
+
+        mod_m = sum_m % 3
+        mod_p = sum_p % 3
+        mod_s = sum_s % 3
+        mod_h = sum_h % 3
+
+        if mod_m == 2 and mod_p == 0 and mod_s == 0 and mod_h == 0:
+            head_start, head_end = 0, 9
+        elif mod_p == 2 and mod_m == 0 and mod_s == 0 and mod_h == 0:
+            head_start, head_end = 9, 18
+        elif mod_s == 2 and mod_m == 0 and mod_p == 0 and mod_h == 0:
+            head_start, head_end = 18, 27
+        elif mod_h == 2 and mod_m == 0 and mod_p == 0 and mod_s == 0:
+            head_start, head_end = 27, 34
+        else:
+            return False # Invalid mathematical structure
+
         # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        for head_idx in range(head_start, head_end):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
