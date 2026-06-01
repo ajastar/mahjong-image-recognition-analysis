@@ -305,8 +305,33 @@ def is_agari_jit(hand_34):
         if hand_34[i] >= 2: pair_count += 1
     if pair_count == 7: return True
 
-    # Normal
-    for head_idx in range(34):
+    # Normal - Modulo-3 Suit Count Check
+    sum_m = hand_34[0]+hand_34[1]+hand_34[2]+hand_34[3]+hand_34[4]+hand_34[5]+hand_34[6]+hand_34[7]+hand_34[8]
+    sum_p = hand_34[9]+hand_34[10]+hand_34[11]+hand_34[12]+hand_34[13]+hand_34[14]+hand_34[15]+hand_34[16]+hand_34[17]
+    sum_s = hand_34[18]+hand_34[19]+hand_34[20]+hand_34[21]+hand_34[22]+hand_34[23]+hand_34[24]+hand_34[25]+hand_34[26]
+    sum_h = hand_34[27]+hand_34[28]+hand_34[29]+hand_34[30]+hand_34[31]+hand_34[32]+hand_34[33]
+
+    mod_m = sum_m % 3
+    mod_p = sum_p % 3
+    mod_s = sum_s % 3
+    mod_h = sum_h % 3
+
+    if mod_m == 2 and mod_p == 0 and mod_s == 0 and mod_h == 0:
+        head_start = 0
+        head_end = 9
+    elif mod_p == 2 and mod_m == 0 and mod_s == 0 and mod_h == 0:
+        head_start = 9
+        head_end = 18
+    elif mod_s == 2 and mod_m == 0 and mod_p == 0 and mod_h == 0:
+        head_start = 18
+        head_end = 27
+    elif mod_h == 2 and mod_m == 0 and mod_p == 0 and mod_s == 0:
+        head_start = 27
+        head_end = 34
+    else:
+        return False
+
+    for head_idx in range(head_start, head_end):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):

@@ -1,0 +1,4 @@
+
+## 2024-05-30 - Domain-Specific Modulo Constraints for Agari Detection
+**Learning:** In `mahjong_logic.py` and `numba_utils.py`, mathematical domain properties of Mahjong hands can heavily optimize standard hand (`is_agari`) validation. Because a valid standard hand always consists of 4 sets (of 3) and 1 pair (of 2), the sum of tiles in the suit containing the pair must mathematically evaluate to 2 (mod 3). All other suits must evaluate to 0 (mod 3). By calculating these modulo-3 sums upfront, we can fast-fail the vast majority of invalid random hands (common in PIMC simulation) and constrain the inner O(N) search for the pair to a single 9-tile suit instead of all 34 tiles.
+**Action:** Always look for high-level mathematical domain constraints to prune search spaces early in hot simulation loops, rather than micro-optimizing the inner recursive routines. Fast-failing invalid states is often more impactful than accelerating valid state traversal.
