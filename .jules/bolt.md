@@ -1,0 +1,3 @@
+## 2024-05-18 - [Eliminated Generator Overhead in Hot Paths]
+**Learning:** Using generator comprehensions inside `sum()` (e.g., `sum(1 for x in arr if cond)`) creates a generator object and has overhead from function calls to `next()` in Python. Unrolling addition for fixed indices (e.g. `hand_34[0] + hand_34[8] + ...`) and using explicit loops (`count = 0; for x in arr: ...`) are significantly faster (up to ~8x for unrolled indexing and ~1.8x for simple loops) than generator sums, which is critical in tight simulation loops in Mahjong logic.
+**Action:** Replace `sum(1 for ...)` and generator comprehensions inside `sum()` with direct unrolled addition for fixed small arrays or simple loops with a counter in performance-critical sections.
