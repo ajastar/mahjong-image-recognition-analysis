@@ -1,0 +1,3 @@
+## 2024-05-24 - Memoizing Functions with Small Domains
+**Learning:** Functions with small input domains (like 0-33 for Mahjong tiles) called frequently in hot paths (like `get_suji`) can be significantly optimized (~35-40% speedup) by using `functools.lru_cache(maxsize=34)` and returning an immutable type (like `tuple`) to prevent cache pollution and allocation overhead.
+**Action:** When identifying core domain functions with finite, small inputs that are called repeatedly (e.g. in simulations or tight loops), implement `functools.lru_cache` coupled with immutable return types instead of generating dynamic lists on every call.
