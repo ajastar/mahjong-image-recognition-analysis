@@ -27,13 +27,14 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
+    if tile >= 27: return ()
     suji = []
-    if tile >= 27: return suji
     num = tile % 9
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 
 class ShantenUtils:
