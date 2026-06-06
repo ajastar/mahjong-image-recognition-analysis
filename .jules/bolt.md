@@ -1,0 +1,3 @@
+## 2024-05-24 - Replace generator expressions inside sum() with list comprehensions/boolean addition
+**Learning:** Using `sum(1 for x in obj)` is surprisingly slow due to generator overhead, but replacing them with verbose explicit loops sacrifices readability. List comprehensions evaluated by `len()` are much faster because they run in C, and preserve readability.
+**Action:** Replace generator expressions inside `sum()` with list comprehensions inside `len()` (e.g. `len([x for x in obj if condition])`) or boolean additions for micro-optimizations in hot loops, maintaining a balance between performance and readability.
