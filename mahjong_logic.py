@@ -16,6 +16,7 @@ Tile = int # Type Alias
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 NAKI_LABELS = ["スルー", "チー", "ポン", "カン", "リーチ"]
+YAO_INDICES_TUP = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
 
 # Enable Numba if available
 try:
@@ -27,13 +28,14 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
     suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return tuple(suji)
     num = tile % 9
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 
 class ShantenUtils:
@@ -630,7 +632,7 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 terminals = sum([hand_34[t] for t in YAO_INDICES_TUP])
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -685,7 +687,7 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
+        terminals = YAO_INDICES_TUP
         
         for part in partitions:
             part_score = 0.0
@@ -891,7 +893,7 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1012,7 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1018,7 +1020,7 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = YAO_INDICES_TUP
             for i in range(34):
                 if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
@@ -1069,7 +1071,7 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = YAO_INDICES_TUP
             if pair_idx in terminals: is_tanyao = False
             for b in blocks:
                 s = b['start']
@@ -1589,7 +1591,7 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = YAO_INDICES_TUP
             
             # ブロックチェック
             for b in all_blocks:
