@@ -27,13 +27,15 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+# ⚡ Bolt: Use LRU cache and immutable tuples to prevent dynamic list allocation overhead
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return ()
     num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if 3 <= num <= 5: return (tile - 3, tile + 3)
+    if num >= 3: return (tile - 3,)
+    if num <= 5: return (tile + 3,)
+    return ()
 
 
 class ShantenUtils:
