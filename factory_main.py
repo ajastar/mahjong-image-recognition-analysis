@@ -13,6 +13,7 @@ import collections
 import re
 import mss
 import pygetwindow as gw
+import functools
 from ultralytics import YOLO
 
 # ==========================================
@@ -94,13 +95,15 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+# ⚡ Bolt: Use LRU cache and immutable tuples to prevent dynamic list allocation overhead
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return ()
     num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if 3 <= num <= 5: return (tile - 3, tile + 3)
+    if num >= 3: return (tile - 3,)
+    if num <= 5: return (tile + 3,)
+    return ()
 
 # ★AI思考のためのデータ変換ロジック（必須）
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, 
