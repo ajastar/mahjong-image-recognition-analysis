@@ -1,0 +1,5 @@
+## 2024-06-15 - Unrolled evaluation for hot-path generator comprehensions
+
+**Learning:** In CPython hot-path functions (e.g., inside `mahjong_logic.py`), evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call overhead because generators create new stack frames and maintain state. Moreover, dynamically generated lists (e.g., `[0,8,9,17,18,26] + list(range(27,34))`) introduce repeated list allocation and concatenation overhead on every function call.
+
+**Action:** Replace `sum(1 for x in obj if condition)` generator comprehensions with list comprehensions evaluated by `len()` (e.g., `len([1 for x in obj if condition])`) which is faster. Flatten dynamically generated lists into module-level variables like `YAO_INDICES_TUP = tuple(...)`. Avoid dynamically generating list in hot-loops like `terminals = sum(hand_34[t] for t in [0,8...])` and instead use a fast explicit `for` loop with early breaks (`break`) when possible (e.g., just checking `has_terminals = False`, instead of fully summing elements when doing `if sum(...) == 0`).
