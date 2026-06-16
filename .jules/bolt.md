@@ -1,0 +1,3 @@
+## 2024-06-16 - [Performance Pattern: Generator comprehensions vs Unrolled operations]
+**Learning:** In CPython, evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call overhead. Additionally, recreating identical static lists using list concatenation and `range()` (e.g., `[0,8,9,17,18,26] + list(range(27,34))`) dynamically over and over again causes huge memory allocations in hot paths.
+**Action:** Unroll fixed length operations (like 34 elements, or 3 suits) or use `frozenset` at the module level for O(1) membership checks to eliminate overhead entirely. Replace `sum(1 for ...)` with `len([1 for ...])` or equivalent unrolled summation when length is small.
