@@ -9,6 +9,7 @@ import glob
 import re
 import math
 import collections
+import functools
 
 # AI / Vision
 import torch
@@ -109,13 +110,16 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+# ⚡ Bolt Optimization: Memoize tile suji calculations with O(1) lookups.
+# Using lru_cache for small finite domain (0-33) and returning immutable tuple to prevent cache pollution.
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
     suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return tuple(suji)
     num = tile % 9
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, round_info, honba, riichi_sticks, ippatsu_flags, p_idx, full_hands_ids, target_tile_id=-1):
     NUM_CHANNELS = 80
