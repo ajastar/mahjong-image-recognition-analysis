@@ -27,13 +27,16 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+# ⚡ Bolt Optimization: Memoize tile suji calculations with O(1) lookups.
+# Using lru_cache for small finite domain (0-33) and returning immutable tuple to prevent cache pollution.
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
     suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return tuple(suji)
     num = tile % 9
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 
 class ShantenUtils:
