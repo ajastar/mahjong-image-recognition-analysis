@@ -874,39 +874,52 @@ class AgariUtils:
             
         # print("DEBUG: is_agari Python Mode")
         
-        # 1. 国士無双 (13種14牌)
-        # 1,9,字牌の種数を確認
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
-        is_kokushi = True
-        has_pair = False
-        for idx in yao_indices:
-            if hand_34[idx] == 0:
-                is_kokushi = False
-                break
-            if hand_34[idx] >= 2:
-                has_pair = True
-        
-        if is_kokushi and has_pair:
-            return True # 国士無双アガリ
+        # 3. 一般手 (4面子1雀頭) - Optimized with Modulo-3 Check
+        # Unrolled sums for faster execution
+        cnt_m = hand_34[0]+hand_34[1]+hand_34[2]+hand_34[3]+hand_34[4]+hand_34[5]+hand_34[6]+hand_34[7]+hand_34[8]
+        cnt_p = hand_34[9]+hand_34[10]+hand_34[11]+hand_34[12]+hand_34[13]+hand_34[14]+hand_34[15]+hand_34[16]+hand_34[17]
+        cnt_s = hand_34[18]+hand_34[19]+hand_34[20]+hand_34[21]+hand_34[22]+hand_34[23]+hand_34[24]+hand_34[25]+hand_34[26]
+        cnt_z = hand_34[27]+hand_34[28]+hand_34[29]+hand_34[30]+hand_34[31]+hand_34[32]+hand_34[33]
+
+        mod_m = cnt_m % 3
+        mod_p = cnt_p % 3
+        mod_s = cnt_s % 3
+        mod_z = cnt_z % 3
+
+        # A valid standard hand must have exactly one suit with sum == 2 (mod 3) for the head
+        if (mod_m == 2) + (mod_p == 2) + (mod_s == 2) + (mod_z == 2) == 1 and \
+           (mod_m in (0, 2)) and (mod_p in (0, 2)) and (mod_s in (0, 2)) and (mod_z in (0, 2)):
+
+            # Determine which suit contains the head (pair)
+            if mod_m == 2:   head_range = range(0, 9)
+            elif mod_p == 2: head_range = range(9, 18)
+            elif mod_s == 2: head_range = range(18, 27)
+            else:            head_range = range(27, 34)
+
+            for head_idx in head_range:
+                if hand_34[head_idx] >= 2:
+                    hand_34[head_idx] -= 2
+                    if AgariUtils._is_all_mentsu(hand_34):
+                        hand_34[head_idx] += 2
+                        return True
+                    hand_34[head_idx] += 2
 
         # 2. 七対子 (7個の対子)
-        # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
-        if pair_count == 7:
-            return True
+        pair_count = 0
+        for c in hand_34:
+            if c >= 2: pair_count += 1
+        if pair_count == 7: return True
 
-        # 3. 一般手 (4面子1雀頭)
-        # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
-            if hand_34[head_idx] >= 2:
-                hand_34[head_idx] -= 2 # 雀頭を抜く
-                
-                # 残りの12枚がすべて面子（順子or刻子）で構成されているか判定
-                if AgariUtils._is_all_mentsu(hand_34):
-                    hand_34[head_idx] += 2 # 戻してTrue
-                    return True
-                
-                hand_34[head_idx] += 2 # ダメなら戻して次へ
+        # 1. 国士無双 (13種14牌)
+        has_pair = False
+        yao_indices = (0,8,9,17,18,26,27,28,29,30,31,32,33)
+        for idx in yao_indices:
+            c = hand_34[idx]
+            if c == 0:
+                return False # Fast fail if missing any orphan
+            if c >= 2:
+                has_pair = True
+        if has_pair: return True
         
         return False
 
