@@ -1,0 +1,3 @@
+## 2024-05-24 - [Title]
+**Learning:** Flatten dynamically generated lists like `[0,8,9,17,18,26] + list(range(27,34))` into constants or module-level tuple/frozenset definitions. Using `sum(comprehension)` with dynamic lists in Python's hot path is exceptionally slow due to overhead from generator and dynamic allocation. Instead, explicit `for` loops combined with early `break` over static index tuples significantly outperform generators in validating existence checks.
+**Action:** Always extract dynamically generated static collections into module-level `frozenset` (for existence testing) or `tuple` (for iteration) constants. Replace `sum(...) == 0` boolean existence checks with direct iteration and early-return to prune operations early in frequently called block code.
