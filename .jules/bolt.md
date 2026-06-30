@@ -1,0 +1,3 @@
+## 2024-06-30 - Generator comprehensions inside sum() overhead
+**Learning:** In CPython hot-path functions, evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call overhead due to generator initialization and frame creation per iteration. Even though it looks clean, it performs worse than alternatives.
+**Action:** Optimize these patterns by unrolling them into explicit `for` loops or using list comprehensions evaluated by `len()` (e.g., `len([x for x in obj if condition])`). Explicit loops are often fastest for simple counting/accumulation, especially in highly computational modules like mahjong evaluation.
