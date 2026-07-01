@@ -17,6 +17,9 @@ INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 NAKI_LABELS = ["スルー", "チー", "ポン", "カン", "リーチ"]
 
+YAO_INDICES_TUP = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+TERMINALS_SET = frozenset(YAO_INDICES_TUP)
+
 # Enable Numba if available
 try:
     import numpy as np
@@ -630,8 +633,12 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
-                 if terminals == 0: score += 50
+                 has_terminals = False
+                 for t in YAO_INDICES_TUP:
+                     if hand_34[t] > 0:
+                         has_terminals = True
+                         break
+                 if not has_terminals: score += 50
             
             if target_tile in doras: score += 150 
             if turn > 12: score += 50 # Late game speed
@@ -685,7 +692,7 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
+        terminals = TERMINALS_SET
         
         for part in partitions:
             part_score = 0.0
@@ -1018,7 +1025,7 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             for i in range(34):
                 if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
@@ -1069,7 +1076,7 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             if pair_idx in terminals: is_tanyao = False
             for b in blocks:
                 s = b['start']
@@ -1589,7 +1596,7 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             
             # ブロックチェック
             for b in all_blocks:
