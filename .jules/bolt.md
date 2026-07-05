@@ -1,0 +1,4 @@
+
+## 2024-07-05 - [Math-based Early Exit in Hot Paths]
+**Learning:** In CPython hot-path functions (e.g., `mahjong_logic.py`'s `is_agari`), full state decomposition of invalid Mahjong hands causes significant overhead. However, standard valid hands possess a rigid mathematical property: exactly one suit must sum to 2 (modulo 3) for the head, and all other suits must sum to 0 (modulo 3).
+**Action:** Implemented a fast-fail modulo-3 check by manually unrolling sums (e.g., `hand_34[0]+hand_34[1]+...`) to bypass array slicing overhead. This prunes invalid states early and additionally constrains the `head_idx` search loop to the specific suit mathematically required to contain the head, boosting pure python speed significantly. Apply mathematical domain constraints to avoid full simulations where possible.

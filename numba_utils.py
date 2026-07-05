@@ -306,7 +306,30 @@ def is_agari_jit(hand_34):
     if pair_count == 7: return True
 
     # Normal
-    for head_idx in range(34):
+    rem_m = (hand_34[0]+hand_34[1]+hand_34[2]+hand_34[3]+hand_34[4]+hand_34[5]+hand_34[6]+hand_34[7]+hand_34[8]) % 3
+    rem_p = (hand_34[9]+hand_34[10]+hand_34[11]+hand_34[12]+hand_34[13]+hand_34[14]+hand_34[15]+hand_34[16]+hand_34[17]) % 3
+    rem_s = (hand_34[18]+hand_34[19]+hand_34[20]+hand_34[21]+hand_34[22]+hand_34[23]+hand_34[24]+hand_34[25]+hand_34[26]) % 3
+    rem_z = (hand_34[27]+hand_34[28]+hand_34[29]+hand_34[30]+hand_34[31]+hand_34[32]+hand_34[33]) % 3
+
+    if (rem_m == 2) + (rem_p == 2) + (rem_s == 2) + (rem_z == 2) != 1: return False
+    if (rem_m == 0) + (rem_p == 0) + (rem_s == 0) + (rem_z == 0) != 3: return False
+
+    head_start = 0
+    head_end = 34
+    if rem_m == 2:
+        head_start = 0
+        head_end = 9
+    elif rem_p == 2:
+        head_start = 9
+        head_end = 18
+    elif rem_s == 2:
+        head_start = 18
+        head_end = 27
+    else:
+        head_start = 27
+        head_end = 34
+
+    for head_idx in range(head_start, head_end):
         if hand_34[head_idx] >= 2:
             hand_34[head_idx] -= 2
             if _is_all_mentsu_jit(hand_34):
