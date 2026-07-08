@@ -6,6 +6,9 @@ import concurrent.futures
 import functools
 import itertools
 
+TERMINALS_TUPLE = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+TERMINALS_SET = frozenset(TERMINALS_TUPLE)
+
 TILE_MAP = {
     "1m":0, "2m":1, "3m":2, "4m":3, "5m":4, "6m":5, "7m":6, "8m":7, "9m":8,
     "1p":9, "2p":10, "3p":11, "4p":12, "5p":13, "6p":14, "7p":15, "8p":16, "9p":17,
@@ -630,7 +633,11 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 terminals = 0
+                 for t in TERMINALS_TUPLE:
+                     if hand_34[t] > 0:
+                         terminals = 1
+                         break
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -685,7 +692,7 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
+        terminals = TERMINALS_SET
         
         for part in partitions:
             part_score = 0.0
@@ -755,7 +762,7 @@ class NakiPlanner:
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
+                elif suit_counts[s] >= 8 and ((suit_counts[0] > 0) + (suit_counts[1] > 0) + (suit_counts[2] > 0)) == 1 and honor_count > 0:
                     part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
@@ -799,7 +806,7 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            koutsu_count = len([m for m in mentsu if m[0] == 'koutsu'])
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -850,6 +857,7 @@ class AgariUtils:
 
         waits = []
         # 34種を1つずつ足してアガリ形になるか試す
+        waits_sum = 0
         for t_id in range(34):
             if hand_34[t_id] >= 4: continue
             
@@ -859,11 +867,11 @@ class AgariUtils:
                 # アガリ形になるなら、その牌の残り枚数を計算
                 # (4枚 - 自分の手牌 - 場に見えている枚数 + 今足した1枚戻し)
                 left = 4 - hand_34[t_id] - visible_tiles_34[t_id] + 1 
-                if left < 0: left = 0
-                waits.append(left)
+                if left > 0:
+                    waits_sum += left
             hand_34[t_id] -= 1 # 戻す
 
-        return sum(waits)
+        return waits_sum
 
     @staticmethod
     def is_agari(hand_34, visible_tiles_34=None):
@@ -891,7 +899,7 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1018,7 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1018,7 +1026,7 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             for i in range(34):
                 if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
@@ -1069,7 +1077,7 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             if pair_idx in terminals: is_tanyao = False
             for b in blocks:
                 s = b['start']
@@ -1155,7 +1163,7 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            koutsu_count = len([b for b in blocks if b['type'] == 'koutsu'])
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
@@ -1589,7 +1597,7 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             
             # ブロックチェック
             for b in all_blocks:

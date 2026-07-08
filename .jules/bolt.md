@@ -1,0 +1,3 @@
+## 2024-05-30 - Generator overhead in sum()
+**Learning:** In hot paths (like Mahjong hand evaluation), evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call overhead in Python. List comprehensions evaluated by `len()` or boolean unrolling are faster. For loops with early returns are extremely fast for boolean checks over static tuples compared to list allocations + generators.
+**Action:** Replace `sum(generator)` patterns with `len(list_comprehension)` or boolean addition `(a>0)+(b>0)` in hot paths, and use explicit `for` loops with early exits for simple boolean array checks (like "is there a terminal tile in hand").
