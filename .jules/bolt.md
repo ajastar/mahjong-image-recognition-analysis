@@ -1,0 +1,3 @@
+## 2024-05-19 - Fast-Failing Standard Hand checks
+**Learning:** Checking Mod-3 rules in standard hands using modulo operators on statically unrolled sums of suits enables pruning non-standard hands early in python iterations (avoiding full recursive evaluation). Using boolean sums `+` instead of generator expression `sum(1 for...)` reduces CPython overhead dramatically in hotpaths.
+**Action:** Always favor unrolled additions for small fixed-size structures (like Mahjong hands array of size 34) and use fast modulo properties for rigid mathematical configurations to early exit complex validations.

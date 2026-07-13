@@ -17,6 +17,15 @@ INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 NAKI_LABELS = ["スルー", "チー", "ポン", "カン", "リーチ"]
 
+TERMINALS_TUPLE = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+TERMINALS_SET = frozenset(TERMINALS_TUPLE)
+
+
+
+
+
+
+
 # Enable Numba if available
 try:
     import numpy as np
@@ -59,7 +68,7 @@ class ShantenUtils:
 
     @staticmethod
     def _shanten_kokushi(hand_34):
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
+        yao_indices = TERMINALS_TUPLE
         unique_yao = 0
         has_pair = False
         for idx in yao_indices:
@@ -255,23 +264,19 @@ class UkeireUtils:
         for t_id in range(34):
             if hand_34[t_id] >= 4: continue
             
-            # 手持ち + 場に見えている数が4枚なら、もう引けない (Ghost Ukeire排除)
-            if (hand_34[t_id] + visible_tiles_34[t_id]) >= 4:
-                continue
+            left_num = 4 - hand_34[t_id] - visible_tiles_34[t_id]
+            if left_num <= 0: continue
 
             hand_34[t_id] += 1
             new_shanten = ShantenUtils.calculate_shanten(hand_34)
             hand_34[t_id] -= 1
             
             if new_shanten < current_shanten:
-                # 有効牌発見
-                # 残り枚数 = 4 - 手持ち - 場に見えている分
-                left_num = 4 - hand_34[t_id] - visible_tiles_34[t_id]
-                if left_num > 0:
-                    effective_tiles.append(t_id)
-                    total_count += left_num
+                effective_tiles.append(t_id)
+                total_count += left_num
                     
         return total_count, effective_tiles
+
 
 class SafetyUtils:
     @staticmethod
@@ -366,7 +371,7 @@ class SafetyUtils:
         if total < 5: return False
         
         for t in river:
-            if t >= 27 or (t < 27 and (t%9 in [0, 8])):
+            if t in TERMINALS_SET:
                 yaochu_count += 1
         
         if yaochu_count / total > 0.6: # >60% discards are Yaochu
@@ -384,7 +389,7 @@ class SafetyUtils:
         
         yaochu_count = 0
         for t in river:
-            if t >= 27 or (t < 27 and (t%9 in [0, 8])):
+            if t in TERMINALS_SET:
                 yaochu_count += 1
         
         # Kokushi player hoards Yaochu. So River has very FEW Yaochu.
@@ -460,14 +465,14 @@ class SafetyUtils:
             
             # A. Kokushi Check (Dangerous Yaochu)
             if SafetyUtils._detect_kokushi_threat(river):
-                if tile_idx >= 27 or (tile_idx < 27 and (tile_idx%9 in [0, 8])):
+                if tile_idx in TERMINALS_SET:
                     base_danger *= 2.0 # Critical Danger
                 else:
                     base_danger *= 0.1 # Middle tiles are safe
             
             # B. Tanyao Check (Safe Yaochu)
             elif SafetyUtils._detect_tanyao_threat(river, melds_arr[r_player]):
-                if tile_idx >= 27 or (tile_idx < 27 and (tile_idx%9 in [0, 8])):
+                if tile_idx in TERMINALS_SET:
                     base_danger *= 0.2 # Yaochu Safe
                 else:
                     base_danger *= 1.2 # Middle Dangerous
@@ -630,7 +635,8 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 has_terminals = any(hand_34[t] > 0 for t in TERMINALS_TUPLE)
+                 terminals = 1 if has_terminals else 0
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -685,7 +691,7 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
+        terminals = TERMINALS_SET
         
         for part in partitions:
             part_score = 0.0
@@ -848,7 +854,7 @@ class AgariUtils:
             v = np.array(visible_tiles_34, dtype=np.int8)
             return get_waits_count_jit(h, v)
 
-        waits = []
+        total_waits = 0
         # 34種を1つずつ足してアガリ形になるか試す
         for t_id in range(34):
             if hand_34[t_id] >= 4: continue
@@ -860,23 +866,52 @@ class AgariUtils:
                 # (4枚 - 自分の手牌 - 場に見えている枚数 + 今足した1枚戻し)
                 left = 4 - hand_34[t_id] - visible_tiles_34[t_id] + 1 
                 if left < 0: left = 0
-                waits.append(left)
+                total_waits += left
             hand_34[t_id] -= 1 # 戻す
 
-        return sum(waits)
+        return total_waits
+
 
     @staticmethod
     def is_agari(hand_34, visible_tiles_34=None):
         """ 手牌が和了形（一般手、七対子、国士無双）か判定する """
-        # print(f"DEBUG: is_agari called. USE_NUMBA={USE_NUMBA}")
         if USE_NUMBA:
             return is_agari_jit(np.array(hand_34, dtype=np.int8))
-            
-        # print("DEBUG: is_agari Python Mode")
+
+        # Mod-3 Suit Count Check for standard hand early pruning
+        # Manual unrolling to avoid array slicing overhead
+        sum_m = hand_34[0] + hand_34[1] + hand_34[2] + hand_34[3] + hand_34[4] + hand_34[5] + hand_34[6] + hand_34[7] + hand_34[8]
+        sum_p = hand_34[9] + hand_34[10] + hand_34[11] + hand_34[12] + hand_34[13] + hand_34[14] + hand_34[15] + hand_34[16] + hand_34[17]
+        sum_s = hand_34[18] + hand_34[19] + hand_34[20] + hand_34[21] + hand_34[22] + hand_34[23] + hand_34[24] + hand_34[25] + hand_34[26]
+        sum_z = hand_34[27] + hand_34[28] + hand_34[29] + hand_34[30] + hand_34[31] + hand_34[32] + hand_34[33]
         
+        # Valid standard hands must have exactly one suit with mod 2, and rest mod 0
+        is_standard_candidate = False
+        if sum_m % 3 == 2 and sum_p % 3 == 0 and sum_s % 3 == 0 and sum_z % 3 == 0:
+            head_range = range(0, 9)
+            is_standard_candidate = True
+        elif sum_m % 3 == 0 and sum_p % 3 == 2 and sum_s % 3 == 0 and sum_z % 3 == 0:
+            head_range = range(9, 18)
+            is_standard_candidate = True
+        elif sum_m % 3 == 0 and sum_p % 3 == 0 and sum_s % 3 == 2 and sum_z % 3 == 0:
+            head_range = range(18, 27)
+            is_standard_candidate = True
+        elif sum_m % 3 == 0 and sum_p % 3 == 0 and sum_s % 3 == 0 and sum_z % 3 == 2:
+            head_range = range(27, 34)
+            is_standard_candidate = True
+
+        if is_standard_candidate:
+            # 3. 一般手 (4面子1雀頭)
+            for head_idx in head_range:
+                if hand_34[head_idx] >= 2:
+                    hand_34[head_idx] -= 2
+                    if AgariUtils._is_all_mentsu(hand_34):
+                        hand_34[head_idx] += 2
+                        return True
+                    hand_34[head_idx] += 2
+
         # 1. 国士無双 (13種14牌)
-        # 1,9,字牌の種数を確認
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
+        yao_indices = TERMINALS_TUPLE
         is_kokushi = True
         has_pair = False
         for idx in yao_indices:
@@ -887,27 +922,16 @@ class AgariUtils:
                 has_pair = True
         
         if is_kokushi and has_pair:
-            return True # 国士無双アガリ
+            return True
 
         # 2. 七対子 (7個の対子)
-        # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = (hand_34[0] >= 2) + (hand_34[1] >= 2) + (hand_34[2] >= 2) + (hand_34[3] >= 2) + (hand_34[4] >= 2) + (hand_34[5] >= 2) + (hand_34[6] >= 2) + (hand_34[7] >= 2) + (hand_34[8] >= 2) + \
+                     (hand_34[9] >= 2) + (hand_34[10] >= 2) + (hand_34[11] >= 2) + (hand_34[12] >= 2) + (hand_34[13] >= 2) + (hand_34[14] >= 2) + (hand_34[15] >= 2) + (hand_34[16] >= 2) + (hand_34[17] >= 2) + \
+                     (hand_34[18] >= 2) + (hand_34[19] >= 2) + (hand_34[20] >= 2) + (hand_34[21] >= 2) + (hand_34[22] >= 2) + (hand_34[23] >= 2) + (hand_34[24] >= 2) + (hand_34[25] >= 2) + (hand_34[26] >= 2) + \
+                     (hand_34[27] >= 2) + (hand_34[28] >= 2) + (hand_34[29] >= 2) + (hand_34[30] >= 2) + (hand_34[31] >= 2) + (hand_34[32] >= 2) + (hand_34[33] >= 2)
         if pair_count == 7:
             return True
 
-        # 3. 一般手 (4面子1雀頭)
-        # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
-            if hand_34[head_idx] >= 2:
-                hand_34[head_idx] -= 2 # 雀頭を抜く
-                
-                # 残りの12枚がすべて面子（順子or刻子）で構成されているか判定
-                if AgariUtils._is_all_mentsu(hand_34):
-                    hand_34[head_idx] += 2 # 戻してTrue
-                    return True
-                
-                hand_34[head_idx] += 2 # ダメなら戻して次へ
-        
         return False
 
     @staticmethod
@@ -1010,7 +1034,10 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = (hand_34[0] >= 2) + (hand_34[1] >= 2) + (hand_34[2] >= 2) + (hand_34[3] >= 2) + (hand_34[4] >= 2) + (hand_34[5] >= 2) + (hand_34[6] >= 2) + (hand_34[7] >= 2) + (hand_34[8] >= 2) + \
+                (hand_34[9] >= 2) + (hand_34[10] >= 2) + (hand_34[11] >= 2) + (hand_34[12] >= 2) + (hand_34[13] >= 2) + (hand_34[14] >= 2) + (hand_34[15] >= 2) + (hand_34[16] >= 2) + (hand_34[17] >= 2) + \
+                (hand_34[18] >= 2) + (hand_34[19] >= 2) + (hand_34[20] >= 2) + (hand_34[21] >= 2) + (hand_34[22] >= 2) + (hand_34[23] >= 2) + (hand_34[24] >= 2) + (hand_34[25] >= 2) + (hand_34[26] >= 2) + \
+                (hand_34[27] >= 2) + (hand_34[28] >= 2) + (hand_34[29] >= 2) + (hand_34[30] >= 2) + (hand_34[31] >= 2) + (hand_34[32] >= 2) + (hand_34[33] >= 2)
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1018,7 +1045,7 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             for i in range(34):
                 if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
@@ -1069,7 +1096,7 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             if pair_idx in terminals: is_tanyao = False
             for b in blocks:
                 s = b['start']
@@ -1444,6 +1471,7 @@ class PIMCEngine:
 # 🧩 Structure Engine (Hand Decomposition)
 # -----------------------------------------------------------------------------
 class StructureUtils:
+
     @staticmethod
     def get_all_partitions(hand_34):
         """
@@ -1455,6 +1483,7 @@ class StructureUtils:
         results = []
         StructureUtils._dfs_partition(hand_34[:], 0, {'mentsu':[], 'tatsu':[], 'pair':[], 'iso':[]}, results)
         return results
+
 
     @staticmethod
     def _dfs_partition(hand, idx, current_struct, results):
@@ -1589,7 +1618,7 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            terminals = TERMINALS_SET
             
             # ブロックチェック
             for b in all_blocks:
