@@ -1,0 +1,3 @@
+## 2024-05-18 - Replacing dynamic list allocations with frozen sets in hot loops
+**Learning:** Evaluating `[0,8,9,17,18,26] + list(range(27,34))` locally within high-frequency functions incurs severe list concatenation overhead. Furthermore, `sum(...)` over generator expressions introduces call overhead compared to an explicit `for` loop that short-circuits.
+**Action:** Use module-level `TERMINALS_TUPLE = (0,8,9,17,18,26,27,28,29,30,31,32,33)` and `TERMINALS_SET = frozenset(TERMINALS_TUPLE)`. Use the explicit tuple for loops with early exit, and the frozenset for `in` membership tests in hot paths.
