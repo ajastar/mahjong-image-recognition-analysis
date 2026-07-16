@@ -1,0 +1,3 @@
+## 2024-05-24 - [Remove Generator Comprehensions from sum()]
+**Learning:** Python's `sum()` is implemented in C and is very fast for lists or tuples, but using generator comprehensions inside `sum()` (e.g., `sum(1 for x in lst if condition)`) creates significant overhead due to CPython iteration over a dynamically generated object. Replacing these with simple `for` loops or unrolled boolean logic `(a > 0) + (b > 0)` yields substantial performance improvements (2-6x faster) in hot paths.
+**Action:** Always avoid generator expressions inside `sum()` in performance-critical code paths. Use `for` loops or explicit addition.
