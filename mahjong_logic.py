@@ -786,12 +786,19 @@ class NakiPlanner:
             
             # --- 6. Ittsu (Straight) Check (Exact) ---
             for s in range(3):
-                has_123 = any(m[0]=='shunta' and m[1]==s*9+0 for m in mentsu) or \
-                          any(t[1]==s*9+0 or t[1]==s*9+1 for t in tatsu)
-                has_456 = any(m[0]=='shunta' and m[1]==s*9+3 for m in mentsu) or \
-                          any(t[1]==s*9+3 or t[1]==s*9+4 for t in tatsu)
-                has_789 = any(m[0]=='shunta' and m[1]==s*9+6 for m in mentsu) or \
-                          any(t[1]==s*9+6 or t[1]==s*9+7 for t in tatsu)
+                # OPTIMIZATION: Using explicit loop instead of any(generator) for significant speedup
+                has_123 = False
+                has_456 = False
+                has_789 = False
+                for m in mentsu:
+                    if m[0] == 'shunta':
+                        if m[1] == s*9 + 0: has_123 = True
+                        elif m[1] == s*9 + 3: has_456 = True
+                        elif m[1] == s*9 + 6: has_789 = True
+                for t in tatsu:
+                    if t[1] == s*9 + 0 or t[1] == s*9 + 1: has_123 = True
+                    elif t[1] == s*9 + 3 or t[1] == s*9 + 4: has_456 = True
+                    elif t[1] == s*9 + 6 or t[1] == s*9 + 7: has_789 = True
                 
                 if has_123 and has_456 and has_789:
                     part_score += 3.0
@@ -1569,7 +1576,13 @@ class ValueEstimator:
                 if t_idx < 27:
                     counts_by_mod[t_idx % 9] += 1
             
-            if any(c >= 3 for c in counts_by_mod):
+            # OPTIMIZATION: Using explicit loops instead of any(generator) for significant speedup
+            has_sanshoku = False
+            for c in counts_by_mod:
+                if c >= 3:
+                    has_sanshoku = True
+                    break
+            if has_sanshoku:
                 score += 2000 # Potentially Sanshoku
             
             # --- Ittsu (一気通貫) ---
@@ -1578,9 +1591,15 @@ class ValueEstimator:
                 # 必要な開始インデックス
                 # 0, 3, 6 (+ color*9)
                 base = color * 9
-                has_123 = any(b['idx'] == base+0 for b in all_blocks)
-                has_456 = any(b['idx'] == base+3 for b in all_blocks)
-                has_789 = any(b['idx'] == base+6 for b in all_blocks)
+                # OPTIMIZATION: Using explicit loop instead of any(generator) for significant speedup
+                has_123 = False
+                has_456 = False
+                has_789 = False
+                for b in all_blocks:
+                    idx = b['idx']
+                    if idx == base: has_123 = True
+                    elif idx == base + 3: has_456 = True
+                    elif idx == base + 6: has_789 = True
                 if has_123 and has_456 and has_789:
                     score += 2000
             
