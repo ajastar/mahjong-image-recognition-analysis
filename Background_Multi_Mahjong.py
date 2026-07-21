@@ -241,7 +241,7 @@ def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras,
         target_p = (p_idx + i) % 4
         diff = scores[target_p] - scores[p_idx]
         obs[55 + i, :, :] = max(-1.0, min(1.0, diff / 50000.0))
-    total_d = sum(len(d) for d in discards_hist)
+    total_d = len(discards_hist[0]) + len(discards_hist[1]) + len(discards_hist[2]) + len(discards_hist[3]) if len(discards_hist) == 4 else sum([len(d) for d in discards_hist])
     obs[60, :, :] = total_d / 70.0
     bakaze_code = (round_info // 4) % 4 
     bakaze_tile = 27 + bakaze_code
