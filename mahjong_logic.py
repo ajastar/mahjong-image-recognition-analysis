@@ -15,6 +15,10 @@ TILE_MAP = {
 Tile = int # Type Alias
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
+# Bolt optimization: Pre-allocate standard terminal indices
+TERMINALS_TUPLE = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+TERMINALS_SET = frozenset(TERMINALS_TUPLE)
+
 NAKI_LABELS = ["スルー", "チー", "ポン", "カン", "リーチ"]
 
 # Enable Numba if available
@@ -630,8 +634,13 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
-                 if terminals == 0: score += 50
+                 # Bolt optimization: Replaced generator expression with explicit loop for early exit and no generator overhead
+                 has_terminals = False
+                 for t in TERMINALS_TUPLE:
+                     if hand_34[t] > 0:
+                         has_terminals = True
+                         break
+                 if not has_terminals: score += 50
             
             if target_tile in doras: score += 150 
             if turn > 12: score += 50 # Late game speed
@@ -685,7 +694,6 @@ class NakiPlanner:
             return 0.0
         
         max_score = 0.0
-        terminals = [0,8,9,17,18,26] + list(range(27,34))
         
         for part in partitions:
             part_score = 0.0
@@ -717,17 +725,17 @@ class NakiPlanner:
             is_tanyao = True
             for m in mentsu:
                 if m[0] == 'koutsu':
-                    if m[1] in terminals: is_tanyao = False
+                    if m[1] in TERMINALS_SET: is_tanyao = False
                 elif m[0] == 'shunta':
                     if m[1] % 9 == 0 or m[1] % 9 == 6: is_tanyao = False
             for t in tatsu:
                 idx = t[1]
-                if idx in terminals or (idx+1) in terminals or (idx+2 if t[0]=='kanchan' else idx+1) in terminals:
+                if idx in TERMINALS_SET or (idx+1) in TERMINALS_SET or (idx+2 if t[0]=='kanchan' else idx+1) in TERMINALS_SET:
                     is_tanyao = False
             for p in pairs:
-                if p in terminals: is_tanyao = False
+                if p in TERMINALS_SET: is_tanyao = False
             for i in iso:
-                if i in terminals: is_tanyao = False
+                if i in TERMINALS_SET: is_tanyao = False
             
             if is_tanyao: part_score += 3.0
             
@@ -755,7 +763,8 @@ class NakiPlanner:
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
+                # Bolt optimization: Replaced slow sum() generator with list comprehension and len()
+                elif suit_counts[s] >= 8 and len([x for x in suit_counts if x > 0]) == 1 and honor_count > 0:
                     part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
@@ -799,7 +808,8 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            # Bolt optimization: Replaced slow sum() generator with list comprehension and len()
+            koutsu_count = len([m for m in mentsu if m[0] == 'koutsu'])
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -808,11 +818,11 @@ class NakiPlanner:
             all_terminal_blocks = True
             for m in mentsu:
                 if m[0] == 'koutsu':
-                    if m[1] not in terminals: all_terminal_blocks = False
+                    if m[1] not in TERMINALS_SET: all_terminal_blocks = False
                 elif m[0] == 'shunta':
                     if m[1] % 9 not in [0, 6]: all_terminal_blocks = False
             for p in pairs:
-                if p not in terminals: all_terminal_blocks = False
+                if p not in TERMINALS_SET: all_terminal_blocks = False
             
             if all_terminal_blocks and len(mentsu) >= 2:
                 part_score += 2.0
@@ -891,7 +901,8 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        # Bolt optimization: Replaced slow sum() generator with list comprehension and len()
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1021,8 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        # Bolt optimization: Replaced slow sum() generator with list comprehension and len()
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1018,9 +1030,9 @@ class YakuUtils:
             
             # Tanyao Chiitoi
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
+            # Bolt optimization: Replaced O(N) list allocation and lookup with O(1) set lookup
             for i in range(34):
-                if hand_34[i] > 0 and i in terminals: is_tanyao = False; break
+                if hand_34[i] > 0 and i in TERMINALS_SET: is_tanyao = False; break
             if is_tanyao: yaku_names.append("Tanyao"); yaku_han += 1
             
             # Honitsu Chiitoi
@@ -1069,12 +1081,12 @@ class YakuUtils:
             
             # Tanyao
             is_tanyao = True
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
-            if pair_idx in terminals: is_tanyao = False
+            # Bolt optimization: Replaced O(N) list allocation and lookup with O(1) set lookup
+            if pair_idx in TERMINALS_SET: is_tanyao = False
             for b in blocks:
                 s = b['start']
                 if b['type'] == 'koutsu':
-                    if s in terminals: is_tanyao = False
+                    if s in TERMINALS_SET: is_tanyao = False
                 elif b['type'] == 'shunta':
                     if s % 9 == 0 or s % 9 == 6: is_tanyao = False
             if is_tanyao: current_yaku_han += 1; current_yaku_names.append("Tanyao")
@@ -1155,7 +1167,8 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            # Bolt optimization: Replaced slow sum() generator with list comprehension and len()
+            koutsu_count = len([b for b in blocks if b['type'] == 'koutsu'])
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
@@ -1589,8 +1602,7 @@ class ValueEstimator:
             is_tanyao = True
             if part['iso']: is_tanyao = False # 孤立牌も含めてチェックすべきだが厳密には完成時
             
-            terminals = [0,8,9,17,18,26] + list(range(27,34))
-            
+            # Bolt optimization: Replaced O(N) list allocation and lookup with O(1) set lookup
             # ブロックチェック
             for b in all_blocks:
                 # Shunta/Tatsu start at idx.
@@ -1607,10 +1619,10 @@ class ValueEstimator:
                      if b['type'] == 'ryanmen' and (start % 9 == 0 or start % 9 == 7): # 12 or 89
                          is_tanyao = False
                 else: # Koutsu / Pair
-                     if start in terminals: is_tanyao = False
+                     if start in TERMINALS_SET: is_tanyao = False
             
             for p in part['pair']:
-                if p in terminals: is_tanyao = False
+                if p in TERMINALS_SET: is_tanyao = False
                 
             if is_tanyao: score += 1500
             
