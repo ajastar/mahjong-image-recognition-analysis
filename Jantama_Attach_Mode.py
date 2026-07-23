@@ -1,3 +1,4 @@
+import functools
 import os
 import time
 import datetime 
@@ -109,13 +110,14 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return ()
     num = tile % 9
+    suji = []
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, round_info, honba, riichi_sticks, ippatsu_flags, p_idx, full_hands_ids, target_tile_id=-1):
     NUM_CHANNELS = 80
@@ -177,7 +179,8 @@ def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras,
     for i in range(1, 4):
         target_p = (p_idx + i) % 4; diff = scores[target_p] - scores[p_idx]
         obs[55 + i, :, :] = max(-1.0, min(1.0, diff / 50000.0))
-    total_d = sum(len(d) for d in discards_hist); obs[60, :, :] = total_d / 70.0
+    # Bolt Optimization: Unrolled length addition avoids generator initialization overhead
+    total_d = len(discards_hist[0]) + len(discards_hist[1]) + len(discards_hist[2]) + len(discards_hist[3]); obs[60, :, :] = total_d / 70.0
     bakaze_code = (round_info // 4) % 4; bakaze_tile = 27 + bakaze_code
     if bakaze_tile < 34: obs[63, bakaze_tile, :] = 1
     dealer_idx = round_info % 4; jikaze_code = (p_idx - dealer_idx + 4) % 4; jikaze_tile = 27 + jikaze_code

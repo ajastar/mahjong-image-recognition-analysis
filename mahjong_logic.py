@@ -17,6 +17,8 @@ INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 NAKI_LABELS = ["スルー", "チー", "ポン", "カン", "リーチ"]
 
+TERMINALS_TUPLE = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+
 # Enable Numba if available
 try:
     import numpy as np
@@ -27,13 +29,14 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return ()
     num = tile % 9
+    suji = []
     if num >= 3: suji.append(tile - 3)
     if num <= 5: suji.append(tile + 3)
-    return suji
+    return tuple(suji)
 
 
 class ShantenUtils:
@@ -59,7 +62,7 @@ class ShantenUtils:
 
     @staticmethod
     def _shanten_kokushi(hand_34):
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
+        yao_indices = TERMINALS_TUPLE
         unique_yao = 0
         has_pair = False
         for idx in yao_indices:
@@ -630,8 +633,13 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
-                 if terminals == 0: score += 50
+                 has_terminals = False
+                 for t in TERMINALS_TUPLE:
+                     if hand_34[t] > 0:
+                         has_terminals = True
+                         break
+                 if not has_terminals:
+                     score += 50
             
             if target_tile in doras: score += 150 
             if turn > 12: score += 50 # Late game speed
@@ -662,8 +670,10 @@ class NakiUtils:
 
         # Select Best
         if not actions: return None
-        if any("RON" in a for a in actions): return "RON! (Win)"
-        if any("PON" in a for a in actions): return actions[0] # Priority to Pon
+        for a in actions:
+            if "RON" in a: return "RON! (Win)"
+        for a in actions:
+            if "PON" in a: return actions[0] # Priority to Pon
         return actions[0] 
 
 class NakiPlanner:
@@ -748,14 +758,15 @@ class NakiPlanner:
                 if i >= 27: honor_count += 1
                 else: suit_counts[i // 9] += 1
             
-            total_suit_tiles = sum(suit_counts)
+            total_suit_tiles = suit_counts[0] + suit_counts[1] + suit_counts[2]
             
             for s in range(3):
                 # Chinitsu: All tiles in one suit (no honors)
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
+                # Bolt Optimization: boolean addition is faster than generator comprehension sum()
+                elif suit_counts[s] >= 8 and (suit_counts[0] > 0) + (suit_counts[1] > 0) + (suit_counts[2] > 0) == 1 and honor_count > 0:
                     part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
@@ -799,7 +810,7 @@ class NakiPlanner:
                     part_score += 1.0
             
             # --- 7. Toitoi Check (Exact) ---
-            koutsu_count = sum(1 for m in mentsu if m[0] == 'koutsu')
+            koutsu_count = len([m for m in mentsu if m[0] == 'koutsu'])
             pair_count = len(pairs)
             if koutsu_count >= 2 and pair_count >= 2:
                 part_score += 2.0
@@ -848,8 +859,8 @@ class AgariUtils:
             v = np.array(visible_tiles_34, dtype=np.int8)
             return get_waits_count_jit(h, v)
 
-        waits = []
         # 34種を1つずつ足してアガリ形になるか試す
+        waits_count = 0
         for t_id in range(34):
             if hand_34[t_id] >= 4: continue
             
@@ -860,10 +871,10 @@ class AgariUtils:
                 # (4枚 - 自分の手牌 - 場に見えている枚数 + 今足した1枚戻し)
                 left = 4 - hand_34[t_id] - visible_tiles_34[t_id] + 1 
                 if left < 0: left = 0
-                waits.append(left)
+                waits_count += left
             hand_34[t_id] -= 1 # 戻す
 
-        return sum(waits)
+        return waits_count
 
     @staticmethod
     def is_agari(hand_34, visible_tiles_34=None):
@@ -876,7 +887,7 @@ class AgariUtils:
         
         # 1. 国士無双 (13種14牌)
         # 1,9,字牌の種数を確認
-        yao_indices = [0,8,9,17,18,26,27,28,29,30,31,32,33]
+        yao_indices = TERMINALS_TUPLE
         is_kokushi = True
         has_pair = False
         for idx in yao_indices:
@@ -891,7 +902,7 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1021,7 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
@@ -1155,7 +1166,7 @@ class YakuUtils:
                     current_yaku_han += val; current_yaku_names.append("Chinitsu")
             
             # Toitoi
-            koutsu_count = sum(1 for b in blocks if b['type'] == 'koutsu')
+            koutsu_count = len([b for b in blocks if b['type'] == 'koutsu'])
             if koutsu_count == 4:
                 current_yaku_han += 2; current_yaku_names.append("Toitoi")
             
@@ -1569,7 +1580,7 @@ class ValueEstimator:
                 if t_idx < 27:
                     counts_by_mod[t_idx % 9] += 1
             
-            if any(c >= 3 for c in counts_by_mod):
+            if counts_by_mod[0] >= 3 or counts_by_mod[1] >= 3 or counts_by_mod[2] >= 3 or counts_by_mod[3] >= 3 or counts_by_mod[4] >= 3 or counts_by_mod[5] >= 3 or counts_by_mod[6] >= 3 or counts_by_mod[7] >= 3 or counts_by_mod[8] >= 3:
                 score += 2000 # Potentially Sanshoku
             
             # --- Ittsu (一気通貫) ---
@@ -1578,9 +1589,13 @@ class ValueEstimator:
                 # 必要な開始インデックス
                 # 0, 3, 6 (+ color*9)
                 base = color * 9
-                has_123 = any(b['idx'] == base+0 for b in all_blocks)
-                has_456 = any(b['idx'] == base+3 for b in all_blocks)
-                has_789 = any(b['idx'] == base+6 for b in all_blocks)
+                has_123 = False
+                has_456 = False
+                has_789 = False
+                for b in all_blocks:
+                    if b['idx'] == base+0: has_123 = True
+                    elif b['idx'] == base+3: has_456 = True
+                    elif b['idx'] == base+6: has_789 = True
                 if has_123 and has_456 and has_789:
                     score += 2000
             
