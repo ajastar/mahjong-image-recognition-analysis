@@ -1,0 +1,3 @@
+## 2025-02-23 - Domain-Specific Pruning with Modulo Math
+**Learning:** In Mahjong, evaluating a standard hand requires 4 sets of 3 tiles and 1 pair of 2. Therefore, the sum of tiles in the suit containing the pair must be 2 (mod 3), and all other suits must be 0 (mod 3). Using unrolled addition arrays in python/numba to check `suit_sum % 3` rapidly identifies invalid hands (which have mod 1 for any suit) and narrows down the pair candidates to only a single suit, vastly speeding up simulation loops.
+**Action:** Use rigid mathematical properties to prune invalid states early, avoiding expensive full-state evaluations in hot paths. Use unrolled addition for slicing in pure Python / Numba to eliminate generator/iteration overhead.
