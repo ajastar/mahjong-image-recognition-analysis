@@ -896,9 +896,31 @@ class AgariUtils:
             return True
 
         # 3. 一般手 (4面子1雀頭)
+        sum_m = hand_34[0]+hand_34[1]+hand_34[2]+hand_34[3]+hand_34[4]+hand_34[5]+hand_34[6]+hand_34[7]+hand_34[8]
+        sum_p = hand_34[9]+hand_34[10]+hand_34[11]+hand_34[12]+hand_34[13]+hand_34[14]+hand_34[15]+hand_34[16]+hand_34[17]
+        sum_s = hand_34[18]+hand_34[19]+hand_34[20]+hand_34[21]+hand_34[22]+hand_34[23]+hand_34[24]+hand_34[25]+hand_34[26]
+
+        mod_m = sum_m % 3
+        mod_p = sum_p % 3
+        mod_s = sum_s % 3
+
+        sum_h = hand_34[27]+hand_34[28]+hand_34[29]+hand_34[30]+hand_34[31]+hand_34[32]+hand_34[33]
+        mod_h = sum_h % 3
+
+        if (mod_m == 2) + (mod_p == 2) + (mod_s == 2) + (mod_h == 2) != 1:
+            return False
+
+        if (mod_m == 1) or (mod_p == 1) or (mod_s == 1) or (mod_h == 1):
+            return False
+
         # まず雀頭（2枚以上ある牌）の候補を探す
         for head_idx in range(34):
             if hand_34[head_idx] >= 2:
+                if head_idx < 9 and mod_m != 2: continue
+                elif 9 <= head_idx < 18 and mod_p != 2: continue
+                elif 18 <= head_idx < 27 and mod_s != 2: continue
+                elif head_idx >= 27 and mod_h != 2: continue
+
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
                 # 残りの12枚がすべて面子（順子or刻子）で構成されているか判定
