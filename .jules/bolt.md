@@ -1,0 +1,3 @@
+## 2024-05-24 - [Optimize get_suji dynamically allocated list overhead]
+**Learning:** Returning a pre-constructed `list` structure like `[tile - 3, tile + 3]` in a hot path is slightly faster and cleaner than repeatedly calling `.append()` on a dynamically allocated local list variable, due to reduced Python function call overhead, while maintaining Numba compilation compatibility.
+**Action:** When implementing small conditional logic in hot paths, return explicitly constructed collections `[]` instead of building them incrementally with `.append()`, while keeping Numba's strict type inference rules (`njit`) in mind.
