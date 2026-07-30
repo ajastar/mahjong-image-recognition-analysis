@@ -1,0 +1,3 @@
+## 2024-05-24 - Optimize Hot Path Functions with LRU Cache and Immutable Types
+**Learning:** Functions with small input domains (e.g., 0-33 for Mahjong tiles) called frequently in hot paths should use `functools.lru_cache` and return immutable types (e.g., `tuple` instead of `list`) to achieve speedups of ~35-40% while ensuring cache safety.
+**Action:** When refactoring utility functions that are duplicated across multiple files (like `get_suji`), apply `@functools.lru_cache` and verify that the corresponding import statement (`import functools`) is injected into every affected file to prevent runtime crashes.
