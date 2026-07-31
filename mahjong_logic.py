@@ -896,8 +896,31 @@ class AgariUtils:
             return True
 
         # 3. 一般手 (4面子1雀頭)
-        # まず雀頭（2枚以上ある牌）の候補を探す
-        for head_idx in range(34):
+        # 雀頭の組は必ず2枚になるため、雀頭がある色の合計枚数は必ず2(mod3)になる。
+        # 他の色の合計枚数は面子(3枚)のみで構成されるため必ず0(mod3)になる。
+        c_man = hand_34[0] + hand_34[1] + hand_34[2] + hand_34[3] + hand_34[4] + hand_34[5] + hand_34[6] + hand_34[7] + hand_34[8]
+        c_pin = hand_34[9] + hand_34[10] + hand_34[11] + hand_34[12] + hand_34[13] + hand_34[14] + hand_34[15] + hand_34[16] + hand_34[17]
+        c_sou = hand_34[18] + hand_34[19] + hand_34[20] + hand_34[21] + hand_34[22] + hand_34[23] + hand_34[24] + hand_34[25] + hand_34[26]
+        c_hon = hand_34[27] + hand_34[28] + hand_34[29] + hand_34[30] + hand_34[31] + hand_34[32] + hand_34[33]
+
+        m_man = c_man % 3
+        m_pin = c_pin % 3
+        m_sou = c_sou % 3
+        m_hon = c_hon % 3
+
+        if m_man + m_pin + m_sou + m_hon != 2:
+            return False
+
+        if m_man == 2:
+            head_start, head_end = 0, 9
+        elif m_pin == 2:
+            head_start, head_end = 9, 18
+        elif m_sou == 2:
+            head_start, head_end = 18, 27
+        else:
+            head_start, head_end = 27, 34
+
+        for head_idx in range(head_start, head_end):
             if hand_34[head_idx] >= 2:
                 hand_34[head_idx] -= 2 # 雀頭を抜く
                 
