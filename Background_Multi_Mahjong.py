@@ -17,6 +17,7 @@ import easyocr
 import random
 import threading
 import sys
+import functools
 
 # ★高速化ライブラリ
 from ppadb.client import Client as AdbClient
@@ -163,13 +164,17 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+@functools.lru_cache(maxsize=34)
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
+    if tile >= 27: return ()
     num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if num >= 3 and num <= 5:
+        return (tile - 3, tile + 3)
+    if num >= 3:
+        return (tile - 3,)
+    if num <= 5:
+        return (tile + 3,)
+    return ()
 
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, 
                       round_info, honba, riichi_sticks, ippatsu_flags, 
