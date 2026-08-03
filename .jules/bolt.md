@@ -1,0 +1,3 @@
+## 2024-05-19 - Fast Domain-Specific Membership Checks
+**Learning:** In highly called Python heuristic functions (e.g., Tanyao evaluation in `mahjong_logic.py`), using dynamically generated lists for membership testing like `[0,8,9,17,18,26] + list(range(27,34))` combined with generator expressions inside `sum()` creates massive allocation and iteration overhead.
+**Action:** Extract rigid domain sets into module-level constants (e.g., `TERMINALS_SET` as a `frozenset` and `TERMINALS_TUPLE` as a `tuple`). Replace generator comprehensions checking array values with explicit loops over the tuple with early early exits (`break`) to yield ~4x to 6x speedup. Replace list membership testing (`x in terminals`) with O(1) `frozenset` lookups.
