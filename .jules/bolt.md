@@ -1,0 +1,3 @@
+## 2024-05-24 - [Optimize sum generator with manual unrolling]
+**Learning:** In CPython hot-path functions (e.g., `mahjong_logic.py`), evaluating generator comprehensions inside `sum()` (e.g., `sum(hand_34[t] for t in ... )`) introduces significant function call and iteration overhead. Additionally, lists created dynamically on each call (e.g., `[0,8,9,17,18,26] + list(range(27,34))`) incur repeated allocation and concatenation costs.
+**Action:** Unroll additions manually for small, fixed-size structures instead of dynamically generating lists/generators. Pre-flatten static collections into literals (using `set` for O(1) membership testing or `list` for iteration) to bypass allocation and generator overhead in hot paths.
