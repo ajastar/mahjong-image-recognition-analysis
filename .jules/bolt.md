@@ -1,0 +1,3 @@
+## 2026-08-26 - [Performance Pattern: Unrolling Additions vs Generators]
+**Learning:** In CPython hot-path functions (e.g., `mahjong_logic.py`), evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for c in hand_34 if c >= 2)`) introduces significant function call overhead. Unrolling additions directly (e.g., `hand[0] + hand[8] ...`) for specific known indices is dramatically faster (~6x speedup) than dynamically building lists or using generator expressions inside `sum()`. For dynamic loops, a list comprehension evaluated by `len()` is faster than a generator passed to `sum()`.
+**Action:** When calculating sums over a small, fixed set of indices in hot paths, prefer manually unrolled additions over `sum()` with generator comprehensions.

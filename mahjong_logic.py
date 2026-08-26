@@ -630,7 +630,7 @@ class NakiUtils:
                 if target_tile in [31, 32, 33]: score += 100 # Yakuhai
             else:
                  # Tanyao heuristic
-                 terminals = sum(hand_34[t] for t in [0,8,9,17,18,26] + list(range(27,34)))
+                 terminals = hand_34[0] + hand_34[8] + hand_34[9] + hand_34[17] + hand_34[18] + hand_34[26] + hand_34[27] + hand_34[28] + hand_34[29] + hand_34[30] + hand_34[31] + hand_34[32] + hand_34[33]
                  if terminals == 0: score += 50
             
             if target_tile in doras: score += 150 
@@ -891,7 +891,7 @@ class AgariUtils:
 
         # 2. 七対子 (7個の対子)
         # 4枚使いは通常「2対子」として扱わないため、単純に種類のカウントで判定
-        pair_count = sum(1 for c in hand_34 if c >= 2)
+        pair_count = len([c for c in hand_34 if c >= 2])
         if pair_count == 7:
             return True
 
@@ -1010,7 +1010,7 @@ class YakuUtils:
 
         # 3. Special Hands
         # Chiitoi Check
-        pairs = sum(1 for c in hand_34 if c >= 2)
+        pairs = len([c for c in hand_34 if c >= 2])
         if pairs == 7:
             # Chiitoi Logic
             yaku_han = 2 # Chiitoi base
