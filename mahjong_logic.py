@@ -27,13 +27,23 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+SUJI_MAP = tuple(
+    [] if t >= 27 else
+    [t - 3, t + 3] if 2 < (t % 9) < 6 else
+    [t + 3] if (t % 9) < 3 else
+    [t - 3]
+    for t in range(34)
+)
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile >= 34 or tile < 0:
+        suji = []
+        if tile >= 27: return suji
+        num = tile % 9
+        if num >= 3: suji.append(tile - 3)
+        if num <= 5: suji.append(tile + 3)
+        return suji
+    return SUJI_MAP[tile]
 
 
 class ShantenUtils:

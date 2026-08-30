@@ -109,13 +109,23 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+SUJI_MAP = tuple(
+    [] if t >= 27 else
+    [t - 3, t + 3] if 2 < (t % 9) < 6 else
+    [t + 3] if (t % 9) < 3 else
+    [t - 3]
+    for t in range(34)
+)
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile >= 34 or tile < 0:
+        suji = []
+        if tile >= 27: return suji
+        num = tile % 9
+        if num >= 3: suji.append(tile - 3)
+        if num <= 5: suji.append(tile + 3)
+        return suji
+    return SUJI_MAP[tile]
 
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, round_info, honba, riichi_sticks, ippatsu_flags, p_idx, full_hands_ids, target_tile_id=-1):
     NUM_CHANNELS = 80
