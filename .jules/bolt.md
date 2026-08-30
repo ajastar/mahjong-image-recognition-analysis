@@ -1,0 +1,3 @@
+## 2024-05-24 - Precomputing small-domain function results to eliminate allocation overhead
+**Learning:** Functions called frequently in tight loops (like `get_suji` in `encode_state_god`) that return dynamically instantiated lists cause significant memory allocation overhead. Since the input domain is very small (0-33 for mahjong tiles), the overhead vastly outweighs the computational logic.
+**Action:** Precompute results for all possible inputs into a module-level tuple and convert the function into an O(1) array lookup (`return SUJI_MAP[tile]`). This completely avoids list instantiation and `.append` overhead in hot paths.
