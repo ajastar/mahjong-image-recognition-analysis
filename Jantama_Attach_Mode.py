@@ -177,7 +177,7 @@ def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras,
     for i in range(1, 4):
         target_p = (p_idx + i) % 4; diff = scores[target_p] - scores[p_idx]
         obs[55 + i, :, :] = max(-1.0, min(1.0, diff / 50000.0))
-    total_d = sum(len(d) for d in discards_hist); obs[60, :, :] = total_d / 70.0
+    total_d = len(discards_hist[0]) + len(discards_hist[1]) + len(discards_hist[2]) + len(discards_hist[3])  # Bolt: unrolled for performance instead of generator sum; obs[60, :, :] = total_d / 70.0
     bakaze_code = (round_info // 4) % 4; bakaze_tile = 27 + bakaze_code
     if bakaze_tile < 34: obs[63, bakaze_tile, :] = 1
     dealer_idx = round_info % 4; jikaze_code = (p_idx - dealer_idx + 4) % 4; jikaze_tile = 27 + jikaze_code
