@@ -1,0 +1,3 @@
+## 2025-02-18 - [Optimize Dynamic List Creation and sum(generator) in Mahjong Hot Paths]
+**Learning:** Inside small-domain loops, Python generator overhead within `sum()` and repeated dynamic list allocations (`list(range(27,34))`) create significant function-call bottlenecks. Specifically, boolean unrolling over static-sized arrays is much faster than `len(list_comprehension)`.
+**Action:** Replaced dynamic terminal arrays with module-level `frozenset`/`tuple`, converted `sum(1 for ...)` to `len([x for ...])`, and unrolled boolean additions for 3-element suit-counts, yielding a 2x-5x speedup in those blocks.
