@@ -1,0 +1,3 @@
+## $(date +%Y-%m-%d) - [Optimize sum() Generator Calls]
+**Learning:** Generator expressions inside `sum()` (e.g., `sum(1 for x in obj if condition)`) introduce significant function call overhead in CPython, especially in hot paths like Mahjong hand evaluation where millions of states are simulated.
+**Action:** Replace `sum()` generators with unrolled boolean additions for small fixed-size structures (e.g., `(a > 0) + (b > 0) + (c > 0)`), manual index unrolling (e.g., `arr[0] + arr[1]`), or `len([list comprehension])` where appropriate to optimize Python execution without sacrificing correctness. Be sure to add comments justifying these unrolled optimizations to prevent code reviewers from reverting them for readability.
