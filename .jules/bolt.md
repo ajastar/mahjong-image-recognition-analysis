@@ -1,0 +1,3 @@
+## 2024-05-18 - [Avoid generator expressions inside sum for Numba hot paths]
+**Learning:** In CPython, evaluating generator comprehensions inside `sum()` (e.g., `sum(hand_34[t] for t in ...)`) introduces significant function call and slicing overhead. Furthermore, while Numba can compile some generators, manually unrolled mathematical additions (e.g., `hand_34[0] + hand_34[1] + ...`) bypass entirely the overhead of dynamic iterable creation, yielding substantially faster execution in both pure Python and Numba compiled modes.
+**Action:** When optimizing hot path evaluations involving small, fixed-domain summations, replace dynamically constructed generators inside `sum()` with explicitly unrolled manual addition.
