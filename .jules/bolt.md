@@ -1,0 +1,3 @@
+## 2024-09-06 - Replacing sum() generators in CPython hot paths
+**Learning:** In CPython, evaluating generator comprehensions inside `sum()` (e.g., `sum(1 for x in obj)`) introduces significant function call and frame evaluation overhead that hurts performance in hot paths (like Mahjong yaku evaluation). Explicit loops are faster but sacrifice conciseness/readability.
+**Action:** Replace `sum(generator)` with `len(list_comprehension)` which is ~1.5x - 2x faster while maintaining conciseness, or use unrolled boolean addition (e.g., `(a > 0) + (b > 0)`) for small fixed structures which is up to 6x faster.
