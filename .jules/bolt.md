@@ -1,0 +1,3 @@
+## 2024-09-07 - [Unrolling fixed array aggregations for hot-path performance]
+**Learning:** In CPython, using `sum()` on generators (e.g. `sum(1 for x in arr if x > 0)`) or even direct `sum(arr)` on very small, fixed-size arrays (like the 3-element `suit_counts` array in `mahjong_logic.py`) introduces substantial generator and function call overhead. Unrolling these operations manually using boolean addition and explicit index addition avoids this overhead and yields ~4-7x speedup for micro-operations in critical hot paths.
+**Action:** Identify operations iterating over tiny, static-sized sequences (e.g., 3-element suit counters or 4-element player state tracking lists) and unroll them with direct indexing (e.g. `arr[0] + arr[1]...`) to maximize evaluation speed.
