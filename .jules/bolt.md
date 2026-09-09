@@ -1,0 +1,3 @@
+## 2024-05-19 - [O(1) Tuple Lookup Optimization]
+**Learning:** Python functions called extremely frequently in hot paths that perform small domain logic checks and return newly instantiated lists (like `get_suji` returning suji tile indices 0-33) introduce massive list allocation overhead.
+**Action:** Replace small-domain functions with O(1) tuple array lookups (e.g., `SUJI_MAP`) precomputed at module load time to bypass list instantiation and conditional logic. Remember to retain backward compatibility by handling out-of-bounds indices cleanly before tuple lookup, and to check for exact function duplication across files.

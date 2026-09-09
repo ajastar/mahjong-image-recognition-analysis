@@ -27,13 +27,12 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+SUJI_MAP = ((3,), (4,), (5,), (0, 6), (1, 7), (2, 8), (3,), (4,), (5,), (12,), (13,), (14,), (9, 15), (10, 16), (11, 17), (12,), (13,), (14,), (21,), (22,), (23,), (18, 24), (19, 25), (20, 26), (21,), (22,), (23,), (), (), (), (), (), (), ())
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile < 0 or tile >= 34:
+        return []
+    return SUJI_MAP[tile]
 
 
 class ShantenUtils:
