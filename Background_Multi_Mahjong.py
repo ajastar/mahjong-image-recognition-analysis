@@ -163,13 +163,12 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+SUJI_MAP = ((3,), (4,), (5,), (0, 6), (1, 7), (2, 8), (3,), (4,), (5,), (12,), (13,), (14,), (9, 15), (10, 16), (11, 17), (12,), (13,), (14,), (21,), (22,), (23,), (18, 24), (19, 25), (20, 26), (21,), (22,), (23,), (), (), (), (), (), (), ())
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile < 0 or tile >= 34:
+        return []
+    return SUJI_MAP[tile]
 
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, 
                       round_info, honba, riichi_sticks, ippatsu_flags, 
