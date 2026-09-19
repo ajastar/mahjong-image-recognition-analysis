@@ -1569,7 +1569,10 @@ class ValueEstimator:
                 if t_idx < 27:
                     counts_by_mod[t_idx % 9] += 1
             
-            if any(c >= 3 for c in counts_by_mod):
+            # ⚡ Bolt: Unroll generator expression on fixed-size array to eliminate function call and iteration overhead in hot path
+            if (counts_by_mod[0] >= 3 or counts_by_mod[1] >= 3 or counts_by_mod[2] >= 3 or
+                counts_by_mod[3] >= 3 or counts_by_mod[4] >= 3 or counts_by_mod[5] >= 3 or
+                counts_by_mod[6] >= 3 or counts_by_mod[7] >= 3 or counts_by_mod[8] >= 3):
                 score += 2000 # Potentially Sanshoku
             
             # --- Ittsu (一気通貫) ---
