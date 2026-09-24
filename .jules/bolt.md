@@ -1,0 +1,3 @@
+## 2024-09-24 - [Optimize Honitsu evaluation in hot path]
+**Learning:** In CPython hot-path functions, using the built-in `sum()` function with generator comprehensions on tiny fixed-size arrays (like length-3 `suit_counts`) introduces significant function call and iteration overhead. Unrolling these additions and logical evaluations explicitly avoids this overhead and yields massive speedups.
+**Action:** When evaluating tiny fixed-size arrays in hot paths, avoid `sum()` and generator expressions. Instead, unroll the operations explicitly (e.g., `arr[0] + arr[1] + arr[2]` and `(arr[0] > 0) + (arr[1] > 0) + (arr[2] > 0)`).
