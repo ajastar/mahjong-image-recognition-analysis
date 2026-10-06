@@ -94,13 +94,26 @@ TILE_MAP = {
 INV_TILE_MAP = {v: k for k, v in TILE_MAP.items()}
 TILE_MAP["0m"] = 4; TILE_MAP["0p"] = 13; TILE_MAP["0s"] = 22
 
+# ⚡ Bolt: Precompute suji mapping for O(1) lookups to avoid list allocation overhead
+def _init_suji_map():
+    suji_map = []
+    for tile in range(34):
+        suji = []
+        if tile < 27:
+            num = tile % 9
+            if num >= 3:
+                suji.append(tile - 3)
+            if num <= 5:
+                suji.append(tile + 3)
+        suji_map.append(tuple(suji))
+    return tuple(suji_map)
+
+SUJI_MAP = _init_suji_map()
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile < 0 or tile >= 34:
+        return ()
+    return SUJI_MAP[tile]
 
 # ★AI思考のためのデータ変換ロジック（必須）
 def encode_state_god(hands, discards_hist, tsumogiri_hist, melds, scores, doras, 
