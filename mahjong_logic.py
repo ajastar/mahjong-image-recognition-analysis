@@ -27,13 +27,26 @@ except ImportError:
     USE_NUMBA = False
     print("[WARN] Numba not found, running in Python mode (Slow)")
 
+# ⚡ Bolt: Precompute suji mapping for O(1) lookups to avoid list allocation overhead
+def _init_suji_map():
+    suji_map = []
+    for tile in range(34):
+        suji = []
+        if tile < 27:
+            num = tile % 9
+            if num >= 3:
+                suji.append(tile - 3)
+            if num <= 5:
+                suji.append(tile + 3)
+        suji_map.append(tuple(suji))
+    return tuple(suji_map)
+
+SUJI_MAP = _init_suji_map()
+
 def get_suji(tile):
-    suji = []
-    if tile >= 27: return suji
-    num = tile % 9
-    if num >= 3: suji.append(tile - 3)
-    if num <= 5: suji.append(tile + 3)
-    return suji
+    if tile < 0 or tile >= 34:
+        return ()
+    return SUJI_MAP[tile]
 
 
 class ShantenUtils:
