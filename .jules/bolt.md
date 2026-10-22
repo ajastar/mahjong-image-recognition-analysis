@@ -1,0 +1,3 @@
+## 2024-05-24 - [Unrolling suit_counts Generator]
+**Learning:** In CPython hot-path functions (e.g., `mahjong_logic.py`'s `evaluate_shanten_with_naki`), evaluating generator comprehensions inside `sum()` for checking single-suit structures (e.g., `sum(1 for x in suit_counts if x > 0) == 1`) introduces significant function call overhead. Unrolling these logical evaluations explicitly for fixed-length (3 elements) arrays (`(suit_counts[0] > 0) + (suit_counts[1] > 0) + (suit_counts[2] > 0) == 1`) avoids this overhead and yields ~6x speedup.
+**Action:** When calculating boolean combinations over small, fixed-length variables like suit trackers in pure Python, manually unroll the additions rather than using `sum()` with a generator expression.
