@@ -755,7 +755,8 @@ class NakiPlanner:
                 if suit_counts[s] == total_suit_tiles + honor_count and honor_count == 0:
                     part_score += 6.0
                 # Honitsu: One suit + honors
-                elif suit_counts[s] >= 8 and sum(1 for x in suit_counts if x > 0) == 1 and honor_count > 0:
+                # ⚡ Bolt: Replace generator comprehension with unrolled boolean additions for small fixed array (length 3)
+                elif suit_counts[s] >= 8 and ((suit_counts[0] > 0) + (suit_counts[1] > 0) + (suit_counts[2] > 0)) == 1 and honor_count > 0:
                     part_score += 4.0
             
             # --- 5. Sanshoku Doujun Check (Exact) ---
